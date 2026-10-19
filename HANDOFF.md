@@ -1,45 +1,54 @@
-current_spec: runtime-foundation
+current_spec: identity-profiles
 
 # Blindmesh handoff
 
-Date: 2026-10-19. Scope: initial project governance/documentation bootstrap from the preserved PRD. No feature implementation or archival is authorized by proposal authoring.
+Date: 2026-10-20. Scope: the runtime foundation is implemented, verified and archived. The next change is selected but not started.
 
 ## Current state and next action
 
-Backend selected by the user: C# 14/.NET SDK 10.0.400, ASP.NET Core 10, EF Core/Npgsql 10, PostgreSQL 17. Frontend: Next.js 16/React 19/TypeScript 5, Node 24/npm. See docs/architecture.md.
+The runtime foundation is implemented and archived as `openspec/changes/archive/2026-10-19-runtime-foundation`; the generated canonical spec is `openspec/specs/runtime-foundation/spec.md`. The product now runs: a C# API, a worker, a PostgreSQL 17 schema, a generated TypeScript client and a Next.js 16 web application, started by `docker compose -f infra/compose.dev.yaml up -d --build`.
 
-Twelve proposed changes contain 37 requirements, 111 scenarios and 109 unchecked implementation tasks. No .csproj, solution, application package.json, product tests, database migrations or running service exists. The only apps asset is the pinned shared UI token file. No change is archived. runtime-foundation is the first dependency-eligible change; openspec/package-map.md and openspec/change-map.json agree.
+Eleven packages remain proposed. They hold 33 requirements, 102 scenarios and 99 unchecked implementation tasks. `identity-profiles` is the only dependency-eligible change, because its only prerequisite is archived. `openspec/package-map.md` and `openspec/change-map.json` agree.
 
-The sole first-line current_spec is the machine-readable selected active package. Advance it after verified implementation/archive; remove it when the active queue becomes empty.
+The sole first-line current_spec is the machine-readable selected active package. Advance it after verified implementation and archive; remove it when the active queue becomes empty.
 
-MIT license is preserved. Source PRD SHA256 remains 718d1f7bb8884c803fb7aa6b8b8fc88c5afba6b9688884dad187f6eb3d7ec91b. Git is on main; staging succeeded in this session, so an older read-only Git limitation is no longer current.
+MIT license is preserved. Source PRD SHA256 remains 718d1f7bb8884c803fb7aa6b8b8fc88c5afba6b9688884dad187f6eb3d7ec91b. Git is on main.
 
 ## Verification evidence
 
-- python3 scripts/verify_bootstrap.py: PASS; 12 changes, 37 requirements, 111 scenarios, 109 unchecked tasks; shared token SHA256 and 12 contrast pairs verified.
-- node scripts/check-openspec-change-names.mjs: PASS.
-- openspec validate --all --strict --no-interactive: 12 passed, 0 failed.
-- .project.json validates against the Forge governance JSON Schema. Stack/profile are dotnet/dotnet-product; lifecycle is planning; deployable is false.
-- python3 ../forge/modules/workspace-governance/scripts/ui_conformance.py . --json: PASS, no findings. Only a vendored token asset exists; zero product UI files are in scope. This is not browser accessibility evidence.
-- Forge import with --profile aspnet-web --accept succeeded in the local default registry. Current declared maturity is L0, target L3; the import preview's inferred L1 is not observed product maturity.
-- .github/workflows/planning.yaml passed on GitHub Actions for published commit 3bdbfca1a3a4df740147a30bf55fa5f4d61bec29: https://github.com/lileililiwen/blindmesh/actions/runs/39277164736. This verifies planning artifacts only.
-- The final local Forge Gate after path reconciliation is BLOCKED: native build/tests/security are unbound and governance-quality fails on twelve check-debt findings. Planning verification, change names, repository, source-size and UI-conformance checks pass. Evidence is stored in ignored .forge/gate/blindmesh/evidence.json and the temporary verification registry; it is not release approval.
-- GitHub authentication succeeded outside the sandbox; network restrictions caused the initial sandbox failure. No credentials were read or copied.
+- `dotnet restore Blindmesh.sln --locked-mode`: PASS. Six projects restore from the committed `packages.lock.json` files. Every restore also prints `warning NU1900` for the public platform feed, because that feed is unreachable. The warning is the visible evidence of the blocked platform adoption.
+- `dotnet format Blindmesh.sln --verify-no-changes`: PASS. No file needs formatting.
+- `dotnet build Blindmesh.sln -c Release --no-restore`: PASS. Five product projects and one test project, no compiler warning.
+- `dotnet test Blindmesh.sln -c Release --no-build`: PASS. 21 tests, 0 failed, against an isolated PostgreSQL 17 container started by Testcontainers.
+- `npm --prefix apps/web ci`: PASS. 391 packages, the lock file is committed.
+- `npm --prefix apps/web run lint`, `run typecheck`, `run build`: PASS. No warning, no error, Next.js 16.4.2.
+- `npm --prefix apps/web run api:check`: PASS. The committed `packages/api-client/openapi.json` and `src/generated/schema.ts` match a fresh generation, byte for byte.
+- `docker compose -f infra/compose.dev.yaml up -d --build`: PASS. PostgreSQL 17.11, the object storage, the mail sink, the API, the worker, the web application and the Caddy proxy start. `dotnet run --project src/Blindmesh.Api -- migrate` applies the migration.
+- `npm --prefix apps/web run test:e2e -- --project=chromium --grep FOUND`: PASS. 8 browser journeys against the compose stack.
+- `npm --prefix apps/web run test:a11y -- --grep FOUND`: PASS. 4 axe runs, no violation in the light theme, the dark theme, at 360 pixels and in the unavailable state.
+- `python3 scripts/verify_bootstrap.py`: PASS. 12 changes, 37 requirements, 111 scenarios, 99 unchecked tasks; the shared token SHA256 and the 12 contrast pairs are verified.
+- `node scripts/check-openspec-change-names.mjs`: PASS.
+- `openspec validate --all --strict --no-interactive`: 12 passed, 0 failed.
+- `python3 ../forge/modules/workspace-governance/scripts/ui_conformance.py . --json`: PASS, no finding. 9 product UI files are in scope. This is not browser accessibility evidence; the axe runs above are.
+- The Gate manifest now binds the native checks: `dotnet build`, `dotnet test`, the NuGet vulnerability scan and the frontend production audit. Each of them passes when run directly.
+- The real rendered captures of the home page are in `docs/assets/`; the exact commands are in `docs/assets/capture-plan.md`.
 
 ## Blockers and remaining boundaries
 
-The prior local governance audit reported unregistered central workspace inventory, unverified publication and required build/security/test command debt. Publication metadata is now verified as described below; central inventory and native-check debt remain separate work. Local declaration/schema and Forge registration do not prove the central governance registry is updated. Do not modify another project's registry or suppress its findings as part of product code.
+The shared `Platform.*` packages are not adopted. The public platform feed answers 404, so the restore of a platform package fails visibly and the adoption stays blocked. The product does not replace the platform packages with a local copy. The probe, the blocked state and the retry command are in `docs/foundation/platform-adoption.md`.
 
-Native build/test/security checks require runtime-foundation's actual manifests and commands. Do not bind documentation checks as substitutes for product build/tests or turn off required checks to manufacture a passing Gate. A successful planning check is not DONE.
+`forge gate .` did not run: the Forge binary is not on PATH in this environment. The local project checks above are the evidence. The workspace governance check still reports the pre-existing central inventory and gate debt findings of the bootstrap session; they are separate work and were not suppressed from the product.
 
-The user selected public GitHub visibility on 2026-10-19. The Forge-owned github_metadata.py publisher ran with --publish --owner lileililiwen --repository blindmesh --json: exit 0, state metadata_verified, differences {}. Public repository: https://github.com/lileililiwen/blindmesh; origin points to its HTTPS clone URL, default branch main. Description, homepage, five declared topics and PUBLIC visibility match .project.json. The publisher created the repository, pushed main without force and applied metadata using the authenticated gh session. This is repository publication evidence, not application deployment.
+The release smoke on Firefox and WebKit did not run. Only the Chromium browser is installed in this environment.
 
-Browser flows, responsive behavior, rendered accessibility, production readiness and documentation screenshots are unavailable because no application exists. docs/assets/capture-plan.md names the real capture commands for the foundation milestone. Token measurements are not rendered UI evidence.
+`npm audit` reports high severity advisories in `braces`, `fast-glob` and `micromatch` through the dev-only `eslint-config-next` chain. The latest `braces` release is still affected, so there is no patched version to move to. The shipped production dependency set audits clean; the finding is recorded rather than hidden.
 
-Exact tool setup: use Node 24's global bin and the built Forge binary on PATH; OpenSpec 1.6.0 and .NET SDK 10.0.400 were verified. Keep machine-specific paths out of tracked runtime/setup configuration. See docs/bootstrap-evidence.md.
+The session bound CSRF token check belongs to the identity package. Until then an unsafe request without an `Origin` header is treated as a non-browser client and is not blocked by the origin guard.
+
+The marketplace features are not implemented. The home page says so instead of showing a fictional dashboard. Browser flows, responsive behavior and rendered accessibility exist for the runtime only.
 
 ## Workflow
 
 Work directly on main. Before selecting a package, run the change-name preflight; implement only one dependency-eligible package using BFS → DFS → BFS and all four task phases. Assess UI/UX in every change; APIs do not replace interfaces. Human-facing completion requires usable UI, browser journeys, responsive checks and accessibility evidence.
 
-Each completed implementation change requires exactly two commits: implementation/tests/archive/generated specs, then HANDOFF.md only. Do not ask for conversational authorization or confirmation before either commit. Stop after commit 2; do not push. This lifecycle is for completed implementation, not this initial documentation/proposal bootstrap.
+Each completed implementation change requires exactly two commits: implementation/tests/archive/generated specs, then HANDOFF.md only. Do not ask for conversational authorization or confirmation before either commit. Stop after commit 2; do not push.

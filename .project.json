@@ -45,7 +45,7 @@
     ],
     "homepage": "https://github.com/lileililiwen/blindmesh",
     "license_spdx": "MIT",
-    "visibility": "private"
+    "visibility": "public"
   },
   "publication": {
     "provider": "github",

@@ -18,9 +18,9 @@ The user selected C# on 2026-10-19. All current architecture, metadata, package 
 | Hosted CI | Planning workflow created; remote run not performed |
 | Full local Forge Gate | BLOCKED: build/tests/security unbound; governance-quality fails; planning/name/repository/UI checks pass |
 | Central governance audit | Exit 1; Blindmesh has unregistered central inventory, publication and check-debt findings plus provider/taxonomy warnings; unrelated workspace findings also exist |
-| GitHub | Authentication valid; no remote/publication/metadata writes; visibility decision pending |
+| GitHub | Authentication valid; user selected public visibility; publication verification in progress |
 | Product/runtime/browser/deployment | Not implemented or verified |
 
 All source proposals remain active and unarchived. No product feature is complete. Native build/test/security commands must be bound to real application manifests in runtime-foundation; documentation checks cannot substitute for them. Central registry and debt snapshot changes belong to the shared owner and were not silently edited here.
 
-Next implementation: runtime-foundation, selected by the first-line pointer in HANDOFF.md. The capture plan requires real browser evidence after the runtime exists. Publish only after the pending visibility decision through the authenticated bootstrap workflow.
+Next implementation: runtime-foundation, selected by the first-line pointer in HANDOFF.md. The capture plan requires real browser evidence after the runtime exists. Public GitHub publication is authorized by the user's visibility answer and proceeds through the authenticated bootstrap workflow.

@@ -32,7 +32,7 @@ The local governance audit reports unregistered central workspace inventory, unv
 
 Native build/test/security checks require runtime-foundation's actual manifests and commands. Do not bind documentation checks as substitutes for product build/tests or turn off required checks to manufacture a passing Gate. A successful planning check is not DONE.
 
-GitHub identity is proposed as lileililiwen/blindmesh. Private is provisional local discoverability metadata pending the user's visibility answer. No origin, push or GitHub metadata write has been made. Publication and remote metadata verification remain blocked on the visibility decision; follow the authenticated bootstrap flow after that answer.
+The user selected public GitHub visibility on 2026-10-19. Target repository: lileililiwen/blindmesh; local discoverability now declares public. Authenticated publication and remote metadata verification are in progress; do not claim success until the remote and branch are verified.
 
 Browser flows, responsive behavior, rendered accessibility, production readiness and documentation screenshots are unavailable because no application exists. docs/assets/capture-plan.md names the real capture commands for the foundation milestone. Token measurements are not rendered UI evidence.
 

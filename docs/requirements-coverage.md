@@ -15,16 +15,16 @@ Source: requirements.md v1.0, 2026-10-19. Preserved unchanged. All rows below de
 | §5 capability/matching / EP-06 | capability-directory CAP-001..004; PAR-001..002 | Typed declarations and hard eligibility; soft weights, AI, quotas and certification automation deferred |
 | §6 credits / EP-05 | credit-ledger CRD-001..004; TSK-002; FDB-003; MOD-002 | Conservation, lots, grants, reservation, Pending, settlement/refund/appeal hold |
 | §6.4 anti-abuse | MOD-001..004; OPS-003 | Self/member exclusion, rate limits, anomaly queue, reports; no automatic guilt from heuristics |
-| §7 technology | runtime-foundation FND-001..004 | Rust/Next/Postgres modular monolith; no speculative microservices/AI process |
+| §7 technology | runtime-foundation FOUND-1..3, FOUND-UX (implemented) | C#/Next/Postgres modular monolith; no speculative microservices/AI process |
 | §8 database constraints | D3 of every owning change; CRD-001..003 | One migration stream, uniqueness/locking/authorization; no full unused schema scaffold |
-| §9 API | All D4 contracts; FND-002 | REST actions, OpenAPI, generated client, consistent errors/idempotency |
+| §9 API | All D4 contracts; FOUND-2 | REST actions, OpenAPI, generated client, consistent errors/idempotency |
 | §10 pages and dashboard | Every package's D5 and fourth requirement | Coherent UI per capability; no fictional task/credit dashboard |
 | §11.1 notifications / EP-08 | notification-delivery NTF-001..004 | In-app/SMTP, preferences/retry; no live push/calendar |
 | §11.2 communication | FDB-003, MOD-001 | Structured correction and case evidence; conversational chat/session scheduling deferred |
 | §11.3 admin | moderation-arbitration MOD-001..004; pilot-operations OPS-001..004 | Cases, restrictions, manual capability verification, ledger reconcile, risk/ops; no raw balance editing |
 | §12 AI | Deferred follow-up after pilot | No AI may mint credits, judge final completion, or operate resource accounts |
 | §13 privacy/security | Shared architecture; IDN/FDB/MOD/OPS | Scoped access, quarantine, retention/export/delete runbook; automation/legal-compliance certification excluded |
-| §14 engineering gates | FND-002..004; OPS-001..004; all verification.md | Real DB concurrency, browser/axe, generated client, backups, measurable performance |
+| §14 engineering gates | FOUND-1..3, FOUND-UX; OPS-001..004; all verification.md | Real DB concurrency, browser/axe, generated client, backups, measurable performance |
 | §15 milestones/MVP | openspec/package-map.md, ROADMAP.md | Ledger moved before public publication to satisfy funded-task invariant |
 | §16 commercial/cold start | CRD-002, OPS-003 | Bounded once-per-subject grants and pilot invitations; paid credits/subscriptions deferred |
 | §17 product validation metrics | REP-001/004, OPS-003/004 | Observed sample sizes and rates; PRD targets remain hypotheses, not fabricated evidence |
@@ -41,6 +41,8 @@ Scope-based completion accepts a useful report with zero bugs. Workflow disagree
 
 Raw screenshots/logs are supported; video, external issue sync, real-time scheduling and automatic account certification are deferred. This is a deliberate smallest coherent MVP, not omission disguised as readiness.
 
-## Planning boundary
+## Implementation boundary
 
-Twelve complete change packages, 48 requirements and 144 scenarios. All task boxes are unchecked. Strict validation and this coverage table cannot establish native runtime, successful exchanges, pilot safety or deployment.
+The runtime foundation is implemented, built and tested; its evidence is in `openspec/changes/runtime-foundation/verification.md`. The other eleven packages are specified only: 37 requirements and 111 scenarios in total, 109 unchecked tasks.
+
+Strict validation and this coverage table cannot establish successful exchanges, pilot safety or deployment. Only the runtime foundation has native, browser and accessibility evidence.

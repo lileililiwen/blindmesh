@@ -1,0 +1,10 @@
+# Requirement traceability
+
+Outcome: Run the real web/API/database/worker shell. All rows are implemented. Scenario names are normative and the tests use their requirement prefix. No scenario is waived by API-only evidence.
+
+| Requirement | Outcome / UX | Design decision and implementation boundary | Scenarios | Tasks | Verification oracle |
+|---|---|---|---|---|---|
+| FOUND-1 | Startup; / | design.md; src/Blindmesh.Api, src/Blindmesh.Worker, src/Blindmesh.Infrastructure; apps/web | FOUND-1 success; rejection; boundary | 1.1, 1.2, 2.1, 3.1, 3.2, 4.1, 4.2 | verification.md; FOUND xUnit/integration + browser/axe assertions. `Found1StartupTests` against an isolated PostgreSQL 17 container, the compose stack and the runtime policy hosted service. |
+| FOUND-2 | Contracts; / | design.md; src/Blindmesh.Api, src/Blindmesh.Worker, src/Blindmesh.Infrastructure; apps/web | FOUND-2 success; rejection; boundary | 1.1, 1.2, 2.2, 3.1, 3.2, 4.1, 4.2 | verification.md; FOUND xUnit/integration + browser/axe assertions. `Found2ContractTests` covers the error envelope, the request id, the origin guard, the scoped idempotency records and the stable OpenAPI document. `npm --prefix apps/web run api:check` proves the byte identical generation. |
+| FOUND-3 | Portability; / | design.md; src/Blindmesh.Api, src/Blindmesh.Worker, src/Blindmesh.Infrastructure; apps/web | FOUND-3 success; rejection; boundary | 1.1, 1.2, 2.3, 3.1, 3.2, 4.1, 4.2 | verification.md; FOUND xUnit/integration + browser/axe assertions. `Found3PortabilityTests` covers the locked restore, the package source mapping, the blocked platform adoption and the runtime manifests. docs/foundation/platform-adoption.md records the probe. |
+| FOUND-UX | Accessible journey; / | design.md; src/Blindmesh.Api, src/Blindmesh.Worker, src/Blindmesh.Infrastructure; apps/web | FOUND-UX complete journey; recover from failure; responsive keyboard operation | 1.1, 1.2, 2.4, 3.1, 3.2, 4.1, 4.2 | verification.md; FOUND xUnit/integration + browser/axe assertions. `tests/e2e/runtime-foundation/journey.spec.ts` and `tests/e2e/runtime-foundation/accessibility.a11y.ts` run in Chromium against the compose stack. |

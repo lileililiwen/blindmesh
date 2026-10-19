@@ -1,0 +1,43 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Restore is locked: committed packages.lock.json files are authoritative. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
+    <NuGetAudit>true</NuGetAudit>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <!--
+      NU1900 reports that a configured package source could not be read. The
+      public platform feed is currently unavailable, so the warning stays visible
+      in every build log while the product restore keeps working. It is never
+      hidden: docs/foundation/platform-adoption.md records the probe and the
+      blocked adoption.
+    -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1900</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      One defaulted platform package version. The public platform feed is mapped for
+      Platform.* in NuGet.config. Adoption is blocked while the feed is unavailable;
+      see docs/foundation/platform-adoption.md. Never edit a tracked file to switch
+      feed versions: pass -p:PlatformPackageVersion=<version> instead.
+    -->
+    <PlatformPackageVersion Condition="'$(PlatformPackageVersion)' == ''">0.1.0</PlatformPackageVersion>
+  </PropertyGroup>
+
+</Project>

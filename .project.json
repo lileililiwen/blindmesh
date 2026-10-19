@@ -5,11 +5,11 @@
   "role": "product",
   "stack": "dotnet",
   "profile": "dotnet-product",
-  "lifecycle": "planning",
+  "lifecycle": "active",
   "verification": {
     "command": "python3 scripts/verify_bootstrap.py && node scripts/check-openspec-change-names.mjs && openspec validate --all --strict --no-interactive",
     "gate_runtime": "driftwatchdog",
-    "evidence_status": "planned"
+    "evidence_status": "verified"
   },
   "deployment": {
     "deployable": false,

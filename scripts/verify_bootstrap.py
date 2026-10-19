@@ -44,9 +44,11 @@ def main():
     require(declaration["profile"] == "dotnet-product" and declaration["stack"] == "dotnet",
             "C#/.NET declaration differs from user-selected stack")
     require(declaration["id"] == "blindmesh", "project identity differs")
-    require(declaration["lifecycle"] == "planning", "update verifier when runtime lifecycle changes")
+    require(declaration["lifecycle"] in ("planning", "active"), "unknown project lifecycle")
     require(declaration["deployment"]["deployable"] is False, "planning project cannot claim deployable")
-    require(declaration["verification"]["evidence_status"] == "planned", "do not promote planning evidence")
+    expected_evidence = "planned" if declaration["lifecycle"] == "planning" else "verified"
+    require(declaration["verification"]["evidence_status"] == expected_evidence,
+            "the evidence status must match the lifecycle")
     plan = json.loads(read("openspec/change-map.json"))
     changes = plan["changes"]
     ids = [change["id"] for change in changes]
@@ -58,7 +60,17 @@ def main():
         require(re.fullmatch(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*", name), f"invalid change name {name}")
         require(set(change["depends_on"]) <= seen, f"dependency order violated: {name}")
         seen.add(name)
+        archived = change.get("status") == "archived"
         base = f"openspec/changes/{name}/"
+        if archived:
+            # An archived change keeps its artifacts under the archive directory.
+            archive_root = ROOT / "openspec" / "changes" / "archive"
+            archived_dirs = [path for path in archive_root.glob(f"*-{name}") if path.is_dir()] \
+                if archive_root.is_dir() else []
+            require(bool(archived_dirs), f"{name}: archived change has no archive directory")
+            if not archived_dirs:
+                continue
+            base = f"openspec/changes/archive/{archived_dirs[0].name}/"
         proposal = read(base + "proposal.md")
         design = read(base + "design.md")
         task_text = read(base + "tasks.md")
@@ -76,8 +88,13 @@ def main():
         ]
         offsets = [task_text.find(heading) for heading in headings]
         require(all(i >= 0 for i in offsets) and offsets == sorted(offsets), f"{name}: task phases")
-        require("- [x]" not in task_text.lower(), f"{name}: proposed tasks marked complete")
-        tasks += task_text.count("- [ ]")
+        if archived:
+            require("- [ ]" not in task_text, f"{name}: archived change still has open tasks")
+            tasks += task_text.count("- [ ]")
+        else:
+            require("- [x]" not in task_text.lower(), f"{name}: proposed tasks marked complete")
+            tasks += task_text.count("- [ ]")
+
         for marker in ["Context and implementation boundary", "Language, runtime and shared ownership",
                        "User experience and interface", "Behavioral model, contracts and failures",
                        "Verification oracle", "Decision ledger"]:
@@ -119,8 +136,10 @@ def main():
         actual = (high + 0.05) / (low + 0.05)
         require(abs(actual - row["ratio"]) < 0.001 and actual >= row["minimum"],
                 f"contrast mismatch/failure {row['theme']} {row['pair']}")
+    ignored_parts = {".git", ".forge", ".codegraph", "node_modules", ".next", "obj", "bin",
+                     "TestResults", "test-results", "playwright-report", "artifacts"}
     for path in ROOT.rglob("*.md"):
-        if ".git" in path.parts or ".forge" in path.parts or path.name == "requirements.md":
+        if ignored_parts.intersection(path.parts) or path.name == "requirements.md":
             continue
         for target in re.findall(r"(?<!!)\[[^\]]*\]\(([^)]+)\)", path.read_text()):
             target = target.split("#", 1)[0]

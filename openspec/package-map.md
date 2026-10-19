@@ -1,10 +1,10 @@
 # Package map
 
-All packages are proposed, unimplemented and unarchived. Authoring these proposals does not authorize feature implementation. Implement one eligible package at a time; start with runtime-foundation. Owners are product-local unless the shared assessment in docs/architecture.md explicitly names a versioned shared artifact. No sibling source/runtime dependencies.
+All packages except the runtime foundation are proposed, unimplemented and unarchived. Authoring these proposals does not authorize feature implementation. Implement one eligible package at a time; start with runtime-foundation. Owners are product-local unless the shared assessment in docs/architecture.md explicitly names a versioned shared artifact. No sibling source/runtime dependencies.
 
 | Order | Package | Single outcome | Owner/project and language | Boundary/contract | Depends on | Independent oracle |
 |---|---|---|---|---|---|---|
-| 1 | [runtime-foundation](changes/runtime-foundation/proposal.md) | Run the real web/API/database/worker shell | Blindmesh; C# 14/.NET 10 + Next.js/TypeScript | Runtime; / | none | FOUND scenario groups and real browser flow |
+| 1 | [runtime-foundation](changes/archive/2026-10-19-runtime-foundation/proposal.md) | Run the real web/API/database/worker shell | Blindmesh; C# 14/.NET 10 + Next.js/TypeScript | Runtime; / | none | FOUND scenario groups and real browser flow |
 | 2 | [identity-profiles](changes/identity-profiles/proposal.md) | Sign in safely and manage a public contributor profile | Blindmesh; C# 14/.NET 10 + Next.js/TypeScript | Identity; /sign-in, /onboarding, /settings/profile, /people/{username} | runtime-foundation | IDENT scenario groups and real browser flow |
 | 3 | [project-workspaces](changes/project-workspaces/proposal.md) | Manage a project's visibility and membership | Blindmesh; C# 14/.NET 10 + Next.js/TypeScript | Projects; /projects, /projects/new, /projects/{id}, /projects/{id}/settings | identity-profiles | PROJ scenario groups and real browser flow |
 | 4 | [capability-directory](changes/capability-directory/proposal.md) | Declare capabilities and evaluate hard matching conditions | Blindmesh; C# 14/.NET 10 + Next.js/TypeScript | Capabilities; /capabilities, /settings/capabilities, /tasks/{id}/eligibility | identity-profiles | CAP scenario groups and real browser flow |

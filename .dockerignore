@@ -1,0 +1,13 @@
+# Build context limits. The images install their own dependencies.
+**/node_modules
+**/.next
+**/bin
+**/obj
+**/TestResults
+**/test-results
+**/playwright-report
+**/artifacts
+**/.env
+.git
+.forge
+.codegraph

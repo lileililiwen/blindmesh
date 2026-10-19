@@ -1,0 +1,117 @@
+name: blindmesh
+
+# Local development stack of the runtime foundation.
+#
+#   docker compose -f infra/compose.dev.yaml up -d --build
+#   dotnet run --project src/Blindmesh.Api -- migrate
+#
+# Every host port can be moved with the variables below. The defaults are the
+# documented local ports and no machine specific address is committed.
+
+services:
+  postgres:
+    image: postgres:17.11-alpine
+    environment:
+      POSTGRES_USER: blindmesh
+      POSTGRES_PASSWORD: blindmesh
+      POSTGRES_DB: blindmesh
+    ports:
+      - "${BLINDMESH_PG_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blindmesh -d blindmesh"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  object-storage:
+    # RustFS speaks the same S3 API as MinIO. The MinIO image is not reachable
+    # from this environment, the product only uses the S3 API.
+    image: rustfs/rustfs:1.0.3
+    command: /data
+    environment:
+      RUSTFS_ACCESS_KEY: blindmesh
+      RUSTFS_SECRET_KEY: blindmesh-secret
+    ports:
+      - "${BLINDMESH_STORAGE_PORT:-9000}:9000"
+      - "${BLINDMESH_STORAGE_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - object-storage-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mail:
+    image: axllent/mailpit:v1.31.6
+    ports:
+      - "${BLINDMESH_MAIL_PORT:-1025}:1025"
+      - "${BLINDMESH_MAIL_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8025/readyz || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: ..
+      dockerfile: src/Blindmesh.Api/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      Blindmesh__Database__ConnectionString: "Host=postgres;Port=5432;Database=blindmesh;Username=blindmesh;Password=blindmesh"
+      Blindmesh__ObjectStorage__Endpoint: "http://object-storage:9000"
+      Blindmesh__Mail__Host: "mail"
+      Blindmesh__Mail__Port: "1025"
+      Api__AllowedOrigins__0: "http://localhost:${BLINDMESH_PROXY_PORT:-8080}"
+      Api__AllowedOrigins__1: "http://127.0.0.1:${BLINDMESH_PROXY_PORT:-8080}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      object-storage:
+        condition: service_started
+      mail:
+        condition: service_started
+    ports:
+      - "${BLINDMESH_API_PORT:-8081}:8080"
+
+  worker:
+    build:
+      context: ..
+      dockerfile: src/Blindmesh.Worker/Dockerfile
+    environment:
+      Blindmesh__Database__ConnectionString: "Host=postgres;Port=5432;Database=blindmesh;Username=blindmesh;Password=blindmesh"
+      Blindmesh__ObjectStorage__Endpoint: "http://object-storage:9000"
+      Blindmesh__Mail__Host: "mail"
+      Blindmesh__Mail__Port: "1025"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    environment:
+      BLINDMESH_API_URL: "http://api:8080"
+      PORT: "3000"
+    depends_on:
+      - api
+    ports:
+      - "${BLINDMESH_WEB_PORT:-3000}:3000"
+
+  proxy:
+    image: caddy:2.11.7-alpine
+    ports:
+      - "${BLINDMESH_PROXY_PORT:-8080}:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - api
+      - web
+
+volumes:
+  postgres-data:
+  object-storage-data:

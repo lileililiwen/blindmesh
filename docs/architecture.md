@@ -22,6 +22,33 @@ Future tree: Blindmesh.sln contains src/Blindmesh.Api, src/Blindmesh.Worker, src
 
 API composition injects domain services. Cross-domain writes use internal service functions sharing the caller's PostgreSQL transaction; API modules never update another domain's tables. Credits has exclusive ledger write ownership. Findings calls Credits; Credits never calls Findings. Worker claims bounded outbox/deadline jobs using FOR UPDATE SKIP LOCKED, applies domain methods and commits events atomically. No network call occurs inside a monetary transaction.
 
+## Runtime foundation endpoints
+
+The runtime foundation owns the endpoints of the shell. They are infrastructure, not a business capability, and every later package adds its own endpoints under the same prefixes.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/health/live` | Liveness of the process. It never reports a dependency. |
+| `GET /v1/health/ready` | Readiness of the API and of the database, the object storage and the mail sink. It answers 503 with the real dependency states while one of them is unreachable. |
+| `GET /v1/openapi/v1.json` | The versioned OpenAPI document. The served document does not depend on the host that produced it. |
+| `POST /v1/runtime/heartbeat` | The runtime command of the foundation. It exercises the idempotency, the transaction and the outbox seams. It has no business meaning. |
+
+The browser uses the same origin path `/api/v1`. The web application forwards it to the API, and Caddy does the same in the compose stack. Unsafe requests without an allowlisted exact `Origin` are rejected with 403 before any side effect. The session bound CSRF token check is added with the session in the identity package.
+
+## Local runtime
+
+```sh
+docker compose -f infra/compose.dev.yaml up -d --build
+dotnet run --project src/Blindmesh.Api -- migrate
+dotnet run --project src/Blindmesh.Api
+dotnet run --project src/Blindmesh.Worker
+npm --prefix apps/web ci && npm --prefix apps/web run build && npm --prefix apps/web run start
+```
+
+The API, the worker and the web application read their addresses from configuration only. `Blindmesh:Database:ConnectionString`, `Blindmesh:ObjectStorage:Endpoint`, `Blindmesh:Mail:Host` and `Blindmesh:Mail:Port` are the runtime locations; `Api:AllowedOrigins` holds the exact browser origins that may send unsafe requests. The compose stack moves the host ports with the `BLINDMESH_*` variables, and the committed defaults are the documented local ports.
+
+The migration stream is owned by `src/Blindmesh.Infrastructure/Persistence/Migrations` and is applied through the migrate command only. The `dotnet run --project src/Blindmesh.Api -- openapi --output <file>` command writes the OpenAPI document that `npm --prefix apps/web run api:generate` turns into `packages/api-client`.
+
 ## Shared architecture reconnaissance
 
 Live evidence was inspected in the Forge checkout; formerly separate governance/platform sibling repositories can be stale after consolidation.

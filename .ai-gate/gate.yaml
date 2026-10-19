@@ -21,11 +21,21 @@ timeouts:
   declared-verification: 180000
   ui-conformance: 120000
 notes:
-  - Documentation/specifications only. Native build and tests remain unresolved until runtime-foundation.
-  - Shared governance/Gate are development tooling; the product runtime must remain portable.
+  - The native build, test and security checks are bound to the real commands of the
+    runtime foundation. The shared governance/Gate are development tooling; the
+    product runtime must remain portable.
+  - The security check scans the shipped dependency sets. The public platform feed
+    is unreachable, so the NuGet scan names nuget.org explicitly; the platform
+    adoption is blocked and recorded in docs/foundation/platform-adoption.md.
+  - The frontend scan covers the production dependencies. The advisories of the
+    lint toolchain are development only, have no patched release and are recorded
+    in HANDOFF.md.
 
 commands:
   repository: 'git diff --check'
+  build: 'dotnet build Blindmesh.sln -c Release --no-restore'
+  tests: 'dotnet test Blindmesh.sln -c Release'
+  security: 'dotnet list Blindmesh.sln package --vulnerable --include-transitive --no-restore --source https://api.nuget.org/v3/index.json && npm --prefix apps/web audit --omit=dev --audit-level=high'
   declared-verification: 'python3 scripts/verify_bootstrap.py && node scripts/check-openspec-change-names.mjs && openspec validate --all --strict --no-interactive'
   check-openspec-change-names: 'node scripts/check-openspec-change-names.mjs'
   governance-quality: 'python3 ../forge/modules/workspace-governance/scripts/workspace_check.py --root .. --project blindmesh --json'

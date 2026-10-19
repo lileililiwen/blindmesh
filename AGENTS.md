@@ -4,13 +4,13 @@
 
 ## Project facts
 
-- Current state: specifications and documentation only; no runnable application.
-- Planned backend: C# 14, .NET SDK 10.0.400, ASP.NET Core 10, EF Core 10/Npgsql, PostgreSQL 17.
-- Planned frontend: Node.js 24, npm, Next.js 16, React 19, TypeScript 5, Tailwind 4, shadcn/ui.
-- Current verification: `python3 scripts/verify_bootstrap.py && node scripts/check-openspec-change-names.mjs && openspec validate --all --strict --no-interactive`.
-- Future build/test commands are specified in [architecture](docs/architecture.md); do not claim they ran before manifests exist.
+- Current state: the runtime foundation is implemented, built and tested; the marketplace packages are specified only.
+- Backend: C# 14, .NET SDK 10.0.400, ASP.NET Core 10, EF Core 10/Npgsql, PostgreSQL 17.
+- Frontend: Node.js 24, npm, Next.js 16, React 19, TypeScript 5, Tailwind 4, shadcn/ui style primitives.
+- Verification: `dotnet restore Blindmesh.sln --locked-mode && dotnet format Blindmesh.sln --verify-no-changes && dotnet build Blindmesh.sln -c Release --no-restore && dotnet test Blindmesh.sln -c Release --no-build` and `npm --prefix apps/web ci && npm --prefix apps/web run lint && npm --prefix apps/web run typecheck && npm --prefix apps/web run build && npm --prefix apps/web run api:check`.
+- Planning verification: `python3 scripts/verify_bootstrap.py && node scripts/check-openspec-change-names.mjs && openspec validate --all --strict --no-interactive`.
 - `requirements.md`: original PRD; preserve it.
-- `apps/`: vendored UI tokens only; future web app. `src/` is reserved for C# API, worker, and domain modules and does not exist yet.
+- `src/`: C# API, worker, application, domain and infrastructure. `apps/web/`: the only web application. `packages/api-client/`: the generated TypeScript client. `tests/`: xUnit integration tests and the Playwright journeys. `infra/`: Compose and Caddy configuration.
 - `docs/`: architecture, PRD coverage, design baseline, evidence.
 - `openspec/`: config, package map, dependency-ordered active change proposals.
 - `scripts/`: documentation verification only.

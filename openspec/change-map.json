@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "source": "requirements.md",
+  "selected": "runtime-foundation",
+  "changes": [
+    {
+      "id": "runtime-foundation",
+      "order": 1,
+      "depends_on": [],
+      "requirement_prefix": "FOUND",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Api, src/Blindmesh.Worker, src/Blindmesh.Infrastructure, apps/web"
+    },
+    {
+      "id": "identity-profiles",
+      "order": 2,
+      "depends_on": [
+        "runtime-foundation"
+      ],
+      "requirement_prefix": "IDENT",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Identity, src/Blindmesh.Application/Identity, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "project-workspaces",
+      "order": 3,
+      "depends_on": [
+        "identity-profiles"
+      ],
+      "requirement_prefix": "PROJ",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Projects, src/Blindmesh.Application/Projects, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "capability-directory",
+      "order": 4,
+      "depends_on": [
+        "identity-profiles"
+      ],
+      "requirement_prefix": "CAP",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Capabilities, src/Blindmesh.Application/Capabilities, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "credit-ledger",
+      "order": 5,
+      "depends_on": [
+        "identity-profiles"
+      ],
+      "requirement_prefix": "CRED",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Credits, src/Blindmesh.Application/Credits, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "task-publication",
+      "order": 6,
+      "depends_on": [
+        "project-workspaces",
+        "capability-directory",
+        "credit-ledger"
+      ],
+      "requirement_prefix": "TASK",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Tasks, src/Blindmesh.Application/Tasks, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "participation-execution",
+      "order": 7,
+      "depends_on": [
+        "task-publication"
+      ],
+      "requirement_prefix": "PART",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Tasks, src/Blindmesh.Application/Tasks, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "evidence-findings",
+      "order": 8,
+      "depends_on": [
+        "participation-execution"
+      ],
+      "requirement_prefix": "EVID",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Findings, src/Blindmesh.Application/Findings, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "moderation-arbitration",
+      "order": 9,
+      "depends_on": [
+        "evidence-findings"
+      ],
+      "requirement_prefix": "MOD",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Moderation, src/Blindmesh.Application/Moderation, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "reputation-history",
+      "order": 10,
+      "depends_on": [
+        "moderation-arbitration"
+      ],
+      "requirement_prefix": "REP",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Reputation, src/Blindmesh.Application/Reputation, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "notification-delivery",
+      "order": 11,
+      "depends_on": [
+        "moderation-arbitration"
+      ],
+      "requirement_prefix": "NOTIF",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Notifications, src/Blindmesh.Application/Notifications, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "pilot-operations",
+      "order": 12,
+      "depends_on": [
+        "reputation-history",
+        "notification-delivery"
+      ],
+      "requirement_prefix": "OPS",
+      "status": "proposed",
+      "readiness": "implementation-ready-after-prerequisites",
+      "module": "src/Blindmesh.Domain/Operations, src/Blindmesh.Application/Operations, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    }
+  ]
+}

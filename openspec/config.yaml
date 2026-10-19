@@ -1,0 +1,24 @@
+schema: spec-driven
+
+context: |
+  Blindmesh: developer mutual testing marketplace. Source: requirements.md, PRD v1.0, 2026-10-19.
+  Current repository is documentation/specifications only, with no application manifests.
+  Planned: C# 14/.NET SDK 10.0.400, ASP.NET Core 10, EF Core 10/Npgsql, PostgreSQL 17; Node 24/npm,
+  Next.js 16, React 19, TypeScript 5, Tailwind 4, shadcn/ui, TanStack Query 5.
+  Modular monolith; apps/web, src/Blindmesh.Api, src/Blindmesh.Worker, domain modules, generated api-client.
+  No sibling source/runtime coupling. Shared integration uses pinned artifacts or local adapters.
+  Credits owns all integer, balanced, immutable ledger changes.
+  Tasks/participations/submissions/findings/disputes are separate state machines.
+  UI/UX is the primary product outcome. APIs do not replace interfaces.
+  Consult docs/architecture.md and openspec/package-map.md for authoritative decisions.
+rules:
+  proposal:
+    - Include scope split, sibling/shared evidence, UI/UX applicability and BFS impact map.
+    - One independently verifiable outcome per package; declare dependencies and non-goals.
+  design:
+    - Resolve exact language/module, UI states, contracts, concurrency, failures and verification.
+  tasks:
+    - Use Baseline, Implementation, Regression/completeness, Verification phases as BFS to DFS to BFS.
+    - Leave implementation tasks unchecked until observed evidence supports them.
+  specs:
+    - Use stable requirement IDs, SHALL, and WHEN/THEN scenarios under ADDED Requirements.

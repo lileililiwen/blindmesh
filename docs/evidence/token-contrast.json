@@ -1,0 +1,115 @@
+{
+  "source_sha256": "7ca6b7956b3f6b475254b4a5d0cf599724e4e1af5f0f88aba4fbccb9f38fc19b",
+  "method": "WCAG relative luminance (sRGB), (Lmax+0.05)/(Lmin+0.05)",
+  "scope": "semantic token pairs only; no rendered UI evidence",
+  "measurements": [
+    {
+      "theme": "light",
+      "pair": "body",
+      "foreground": "#0f172a",
+      "background": "#f8fafc",
+      "ratio": 17.0629,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "pair": "surface_text",
+      "foreground": "#0f172a",
+      "background": "#ffffff",
+      "ratio": 17.8525,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "pair": "muted_text",
+      "foreground": "#334155",
+      "background": "#f8fafc",
+      "ratio": 9.8968,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "pair": "primary_button",
+      "foreground": "#ffffff",
+      "background": "#1d4ed8",
+      "ratio": 6.7016,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "pair": "focus",
+      "foreground": "#1d4ed8",
+      "background": "#f8fafc",
+      "ratio": 6.4052,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "pair": "danger",
+      "foreground": "#b91c1c",
+      "background": "#f8fafc",
+      "ratio": 6.1839,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "pair": "body",
+      "foreground": "#f8fafc",
+      "background": "#0f172a",
+      "ratio": 17.0629,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "pair": "surface_text",
+      "foreground": "#f8fafc",
+      "background": "#334155",
+      "ratio": 9.8968,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "pair": "muted_text",
+      "foreground": "#f1f5f9",
+      "background": "#0f172a",
+      "ratio": 16.296,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "pair": "primary_button",
+      "foreground": "#0f172a",
+      "background": "#93c5fd",
+      "ratio": 9.9001,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "pair": "focus",
+      "foreground": "#bfdbfe",
+      "background": "#0f172a",
+      "ratio": 12.564,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "pair": "danger",
+      "foreground": "#fca5a5",
+      "background": "#0f172a",
+      "ratio": 9.4061,
+      "minimum": 4.5,
+      "passed": true
+    }
+  ]
+}

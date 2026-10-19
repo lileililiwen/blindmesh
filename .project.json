@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "blindmesh",
+  "kind": "dotnet-product",
+  "role": "product",
+  "stack": "dotnet",
+  "profile": "dotnet-product",
+  "lifecycle": "planning",
+  "verification": {
+    "command": "python3 scripts/verify_bootstrap.py && node scripts/check-openspec-change-names.mjs && openspec validate --all --strict --no-interactive",
+    "gate_runtime": "driftwatchdog",
+    "evidence_status": "planned"
+  },
+  "deployment": {
+    "deployable": false,
+    "jenkins_job": null,
+    "compose_file": null
+  },
+  "discoverability": {
+    "description": "Specifications for a developer mutual-testing marketplace with capability matching, structured evidence and credit escrow.",
+    "keywords": [
+      "peer testing",
+      "developer collaboration",
+      "capability matching",
+      "credit escrow"
+    ],
+    "topics": [
+      "developer-tools",
+      "peer-testing",
+      "dotnet",
+      "nextjs",
+      "openspec"
+    ],
+    "audience": [
+      "independent developers",
+      "small software teams"
+    ],
+    "use_cases": [
+      "Find exploratory and directed peer testing",
+      "Coordinate authorized device and account-resource testing"
+    ],
+    "search_phrases": [
+      "developer mutual testing platform",
+      "peer testing with credit escrow"
+    ],
+    "homepage": "https://github.com/lileililiwen/blindmesh",
+    "license_spdx": "MIT",
+    "visibility": "private"
+  },
+  "publication": {
+    "provider": "github",
+    "owner": "lileililiwen",
+    "repository": "blindmesh",
+    "default_branch": "main",
+    "state": "blocked",
+    "evidence_ref": "HANDOFF.md"
+  },
+  "standalone": {
+    "status": "standalone-with-optional-integrations",
+    "local_defaults": [
+      "documentation-verification"
+    ],
+    "required_external_services": [],
+    "required_sibling_projects": [],
+    "evidence_ref": "HANDOFF.md",
+    "evidence_state": "declared"
+  },
+  "ui": {
+    "scope": {
+      "roots": [
+        "apps/web/src"
+      ],
+      "exclude": [
+        "apps/web/src/styles/vendor/tokens.css"
+      ]
+    },
+    "shared_layer": {
+      "adopted": true,
+      "consume_paths": [
+        "apps/web/src/styles/vendor/tokens.css"
+      ],
+      "pin_sha256": "7ca6b7956b3f6b475254b4a5d0cf599724e4e1af5f0f88aba4fbccb9f38fc19b"
+    },
+    "branding_document": "docs/branding.md",
+    "contrast_evidence": "docs/evidence/token-contrast.json"
+  },
+  "interfaces": [
+    {
+      "id": "ui-conformance",
+      "consumes": true,
+      "provider": "workspace-governance",
+      "mechanism": "sibling",
+      "entry": "python3 ../forge/modules/workspace-governance/scripts/ui_conformance.py .",
+      "digest": "sha256:5bad4a67da58bb63242c513e0885a70340cb19652dd684690e7edfd0c2ee6524",
+      "required": true,
+      "evidence_ref": ".ai-gate/gate.yaml"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+schema: 1
+project:
+  id: blindmesh
+  name: Blindmesh
+  profile: aspnet-web
+  maturity: L0
+  target_maturity: L3
+ai:
+  spec: openspec
+docs:
+  readme: README.md
+  roadmap: ROADMAP.md
+  handoff: HANDOFF.md

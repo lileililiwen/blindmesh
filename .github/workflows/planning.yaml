@@ -1,0 +1,29 @@
+name: Planning artifacts
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  planning:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned OpenSpec CLI
+        run: npm install --global @fission-ai/openspec@1.6.0
+      - name: Verify planning artifacts
+        env:
+          OPENSPEC_TELEMETRY: '0'
+        run: |
+          python3 scripts/verify_bootstrap.py
+          node scripts/check-openspec-change-names.mjs
+          openspec validate --all --strict --no-interactive

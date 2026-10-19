@@ -52,7 +52,7 @@
     "owner": "lileililiwen",
     "repository": "blindmesh",
     "default_branch": "main",
-    "state": "blocked",
+    "state": "metadata_verified",
     "evidence_ref": "HANDOFF.md"
   },
   "standalone": {

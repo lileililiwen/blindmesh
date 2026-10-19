@@ -1,6 +1,6 @@
 # Bootstrap review — 2026-10-19
 
-Status: local planning baseline verified; initialization and product delivery remain incomplete.
+Status: local planning baseline and public repository metadata verified; product delivery remains incomplete.
 
 The user selected C# on 2026-10-19. All current architecture, metadata, package mappings, verification commands and OpenSpec proposals use C#/.NET for the backend. The unchanged original PRD's Rust recommendation is superseded by that explicit direction. There is no pending backend-language decision.
 
@@ -15,12 +15,12 @@ The user selected C# on 2026-10-19. All current architecture, metadata, package 
 | Shared token evidence | Pinned bytes and twelve light/dark contrast pairs verified; no rendered interface evidence |
 | Forge registration | Import with aspnet-web accepted in the default local registry; L0 declared, L3 target |
 | Git staging/whitespace | Staging succeeds; cached whitespace check passes. An earlier read-only Git result is stale |
-| Hosted CI | Planning workflow created; remote run not performed |
+| Hosted CI | Planning artifacts workflow succeeded on published commit 3bdbfca; run 39277164736. Product tests/builds remain unimplemented |
 | Full local Forge Gate | BLOCKED: build/tests/security unbound; governance-quality fails; planning/name/repository/UI checks pass |
 | Central governance audit | Exit 1; Blindmesh has unregistered central inventory, publication and check-debt findings plus provider/taxonomy warnings; unrelated workspace findings also exist |
-| GitHub | Authentication valid; user selected public visibility; publication verification in progress |
+| GitHub | Public repository created and main pushed; description, homepage, five topics, PUBLIC visibility and default branch main verified; metadata differences {} |
 | Product/runtime/browser/deployment | Not implemented or verified |
 
 All source proposals remain active and unarchived. No product feature is complete. Native build/test/security commands must be bound to real application manifests in runtime-foundation; documentation checks cannot substitute for them. Central registry and debt snapshot changes belong to the shared owner and were not silently edited here.
 
-Next implementation: runtime-foundation, selected by the first-line pointer in HANDOFF.md. The capture plan requires real browser evidence after the runtime exists. Public GitHub publication is authorized by the user's visibility answer and proceeds through the authenticated bootstrap workflow.
+Next implementation: runtime-foundation, selected by the first-line pointer in HANDOFF.md. The capture plan requires real browser evidence after the runtime exists. Public GitHub publication is complete; this does not satisfy the unimplemented runtime, security, browser or release requirements.

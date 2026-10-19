@@ -22,17 +22,17 @@ MIT license is preserved. Source PRD SHA256 remains 718d1f7bb8884c803fb7aa6b8b8f
 - .project.json validates against the Forge governance JSON Schema. Stack/profile are dotnet/dotnet-product; lifecycle is planning; deployable is false.
 - python3 ../forge/modules/workspace-governance/scripts/ui_conformance.py . --json: PASS, no findings. Only a vendored token asset exists; zero product UI files are in scope. This is not browser accessibility evidence.
 - Forge import with --profile aspnet-web --accept succeeded in the local default registry. Current declared maturity is L0, target L3; the import preview's inferred L1 is not observed product maturity.
-- .github/workflows/planning.yaml defines pinned OpenSpec planning checks. Hosted execution has not run.
+- .github/workflows/planning.yaml passed on GitHub Actions for published commit 3bdbfca1a3a4df740147a30bf55fa5f4d61bec29: https://github.com/lileililiwen/blindmesh/actions/runs/39277164736. This verifies planning artifacts only.
 - The final local Forge Gate after path reconciliation is BLOCKED: native build/tests/security are unbound and governance-quality fails on twelve check-debt findings. Planning verification, change names, repository, source-size and UI-conformance checks pass. Evidence is stored in ignored .forge/gate/blindmesh/evidence.json and the temporary verification registry; it is not release approval.
 - GitHub authentication succeeded outside the sandbox; network restrictions caused the initial sandbox failure. No credentials were read or copied.
 
 ## Blockers and remaining boundaries
 
-The local governance audit reports unregistered central workspace inventory, unverified publication and required build/security/test command debt. It also reports unrelated discovered sibling inventory. Local declaration/schema and Forge registration do not prove the central governance registry is updated. Do not modify another project's registry or suppress its findings as part of product code.
+The prior local governance audit reported unregistered central workspace inventory, unverified publication and required build/security/test command debt. Publication metadata is now verified as described below; central inventory and native-check debt remain separate work. Local declaration/schema and Forge registration do not prove the central governance registry is updated. Do not modify another project's registry or suppress its findings as part of product code.
 
 Native build/test/security checks require runtime-foundation's actual manifests and commands. Do not bind documentation checks as substitutes for product build/tests or turn off required checks to manufacture a passing Gate. A successful planning check is not DONE.
 
-The user selected public GitHub visibility on 2026-10-19. Target repository: lileililiwen/blindmesh; local discoverability now declares public. Authenticated publication and remote metadata verification are in progress; do not claim success until the remote and branch are verified.
+The user selected public GitHub visibility on 2026-10-19. The Forge-owned github_metadata.py publisher ran with --publish --owner lileililiwen --repository blindmesh --json: exit 0, state metadata_verified, differences {}. Public repository: https://github.com/lileililiwen/blindmesh; origin points to its HTTPS clone URL, default branch main. Description, homepage, five declared topics and PUBLIC visibility match .project.json. The publisher created the repository, pushed main without force and applied metadata using the authenticated gh session. This is repository publication evidence, not application deployment.
 
 Browser flows, responsive behavior, rendered accessibility, production readiness and documentation screenshots are unavailable because no application exists. docs/assets/capture-plan.md names the real capture commands for the foundation milestone. Token measurements are not rendered UI evidence.
 

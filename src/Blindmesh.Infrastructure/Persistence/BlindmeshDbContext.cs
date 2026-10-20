@@ -1,6 +1,8 @@
 using Blindmesh.Domain.Identity;
+using Blindmesh.Domain.Projects;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Persistence.Entities;
+using Blindmesh.Infrastructure.Projects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blindmesh.Infrastructure.Persistence;
@@ -22,6 +24,14 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
     public DbSet<UserSession> Sessions => Set<UserSession>();
 
     public DbSet<OAuthState> OAuthStates => Set<OAuthState>();
+
+    public DbSet<Project> Projects => Set<Project>();
+
+    public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
+
+    public DbSet<ProjectVersion> ProjectVersions => Set<ProjectVersion>();
+
+    public DbSet<ProjectStatusChange> ProjectStatusChanges => Set<ProjectStatusChange>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,5 +72,6 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // The tables of the identity module. They are owned by the identity
         // package and are not changed by any other module.
         modelBuilder.ApplyIdentityModel();
+        modelBuilder.ApplyProjectModel();
     }
 }

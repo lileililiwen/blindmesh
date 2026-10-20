@@ -95,3 +95,16 @@ export function Checkbox({ className, ...props }: React.ComponentProps<"input">)
     />
   );
 }
+
+export function Select({ className, ...props }: React.ComponentProps<"select">) {
+  return (
+    <select
+      className={cn(
+        "min-h-[var(--component-control-min-height)] w-full rounded-md border border-border bg-surface px-3 py-2 text-body",
+        "aria-[invalid=true]:border-danger",
+        className,
+      )}
+      {...props}
+    />
+  );
+}

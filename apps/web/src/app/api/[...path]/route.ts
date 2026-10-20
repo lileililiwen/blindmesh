@@ -67,7 +67,11 @@ async function proxy(request: NextRequest, context: RouteContext): Promise<Respo
     responseHeaders.append("set-cookie", cookie);
   }
 
-  return new NextResponse(payload, {
+  // A response without a body (204, 205, 304) must not carry one, so the
+  // delete and the sign out of the API keep their status.
+  const withoutBody = response.status === 204 || response.status === 205 || response.status === 304;
+
+  return new NextResponse(withoutBody ? null : payload, {
     status: response.status,
     headers: responseHeaders,
   });

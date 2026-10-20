@@ -3,10 +3,12 @@ using System.Text.Json.Serialization;
 using Blindmesh.Api.Configuration;
 using Blindmesh.Api.Endpoints;
 using Blindmesh.Api.Endpoints.Identity;
+using Blindmesh.Api.Endpoints.Projects;
 using Blindmesh.Api.Infrastructure;
 using Blindmesh.Application.Runtime;
 using Blindmesh.Infrastructure;
 using Blindmesh.Infrastructure.Identity;
+using Blindmesh.Infrastructure.Projects;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +30,7 @@ RuntimePolicy.Validate(appEnvironment, apiOptions.TestAuthenticationEnabled);
 builder.Services.Configure<ApiOptions>(builder.Configuration.GetSection(ApiOptions.SectionName));
 builder.Services.AddBlindmeshInfrastructure(builder.Configuration);
 builder.Services.AddBlindmeshIdentity(builder.Configuration);
+builder.Services.AddBlindmeshProjects();
 builder.Services.AddScoped<RuntimeHeartbeatService>();
 builder.Services.AddScoped<IdentitySessionGuard>();
 builder.Services.AddHostedService<RuntimePolicyHostedService>();
@@ -63,6 +66,7 @@ app.UseMiddleware<OriginGuardMiddleware>();
 app.MapHealthEndpoints();
 app.MapRuntimeEndpoints();
 app.MapIdentityEndpoints();
+app.MapProjectEndpoints();
 app.MapLocalGitHubFixtureEndpoints();
 app.MapOpenApi("/v1/openapi/{documentName}.json");
 

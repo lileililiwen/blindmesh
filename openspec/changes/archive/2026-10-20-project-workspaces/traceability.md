@@ -1,0 +1,27 @@
+# Requirement traceability
+
+Outcome: Manage a project's visibility and membership. Every row is implemented through persistence, application service, API, interface and tests. The scenario names are normative and the tests use their requirement prefix. No scenario is waived by API-only evidence.
+
+| Requirement | Outcome / UX | Design decision and implementation boundary | Scenarios | Tasks | Verification oracle |
+|---|---|---|---|---|---|
+| PROJ-1 | Lifecycle; /projects, /projects/new, /projects/{id}, /projects/{id}/settings | design.md; src/Blindmesh.Domain/Projects, src/Blindmesh.Application/Projects, src/Blindmesh.Infrastructure, src/Blindmesh.Api/Endpoints/Projects; apps/web | PROJ-1 success; rejection; boundary | 1.1, 1.2, 2.1, 3.1, 3.2, 4.1, 4.2 | verification.md; PROJ xUnit/integration + browser/axe assertions |
+| PROJ-2 | Visibility; /projects, /projects/new, /projects/{id}, /projects/{id}/settings | design.md; src/Blindmesh.Domain/Projects, src/Blindmesh.Application/Projects, src/Blindmesh.Infrastructure, src/Blindmesh.Api/Endpoints/Projects; apps/web | PROJ-2 success; rejection; boundary | 1.1, 1.2, 2.2, 3.1, 3.2, 4.1, 4.2 | verification.md; PROJ xUnit/integration + browser/axe assertions |
+| PROJ-UX | Accessible journey; /projects, /projects/new, /projects/{id}, /projects/{id}/settings | design.md; src/Blindmesh.Domain/Projects, src/Blindmesh.Application/Projects, src/Blindmesh.Infrastructure, src/Blindmesh.Api/Endpoints/Projects; apps/web | PROJ-UX complete journey; recover from failure; responsive keyboard operation | 1.1, 1.2, 2.3, 3.1, 3.2, 4.1, 4.2 | verification.md; PROJ xUnit/integration + browser/axe assertions |
+
+## Scenario to test map
+
+| Scenario | Test | Observable result |
+|---|---|---|
+| PROJ-1 success | `tests/Blindmesh.Tests/Projects/Proj1LifecycleTests.cs` `PROJ1SuccessTheOwnerActivatesTheDraftAndTheVersionHistoryIsRecorded` | The status history row, the version row and the project row of the database. |
+| PROJ-1 rejection | `tests/Blindmesh.Tests/Projects/Proj1LifecycleTests.cs` `PROJ1RejectionAViewerMayNotEditAndAnIllegalTransitionIsRefused` | The unchanged name, version and state of the project and the empty status history after the refused transition. |
+| PROJ-1 boundary | `tests/Blindmesh.Tests/Projects/Proj1LifecycleTests.cs` `PROJ1BoundaryTheArchiveKeepsTheActivityAndRefusesNewVersions` | The kept version and history rows, `accepts_tasks` false and the unchanged project after the refused version and content. |
+| PROJ-1 boundary | `tests/Blindmesh.Tests/Projects/Proj1LifecycleTests.cs` `PROJ1BoundaryAStaleExpectedVersionIsRefusedWithTheCurrentVersion` | The unchanged summary and version after the 409 with the current version. |
+| PROJ-2 success | `tests/Blindmesh.Tests/Projects/Proj2VisibilityTests.cs` `PROJ2SuccessAMemberReadsThePrivateProjectAndMayNotChangeIt` | The member row of the database, the readable private project and the 403 of the refused change. |
+| PROJ-2 rejection | `tests/Blindmesh.Tests/Projects/Proj2VisibilityTests.cs` `PROJ2RejectionAnUnrelatedContributorGetsNoProjectAndNoDetail` | The 404 body without the title, the summary, the description and the repository address, and the list without the project. |
+| PROJ-2 boundary | `tests/Blindmesh.Tests/Projects/Proj2VisibilityTests.cs` `PROJ2BoundaryTheRemovedMemberLosesTheAccessByTheNextRead` | The removed member row and the 404 of the next read and write of the removed member. |
+| PROJ-2 boundary | `tests/Blindmesh.Tests/Projects/Proj2VisibilityTests.cs` `PROJ2BoundaryOnlyTheOwnerChangesTheVisibilityAndAPublicProjectIsReadable` | The public read without a session, the empty membership of the public answer and the 404 after the change back to private. |
+| PROJ-2 boundary | `tests/Blindmesh.Tests/Projects/Proj2VisibilityTests.cs` `PROJ2BoundaryOnlyTheOwnerManagesTheMembers` | The unchanged member rows after the refused management of a member. |
+| PROJ-2 boundary | `tests/Blindmesh.Tests/Projects/Proj2VisibilityTests.cs` `PROJ2BoundaryTheListHoldsTheVisibleProjectsInAStableOrder` and `PROJ2BoundaryTheListKeepsEveryProjectWhenTheyShareTheCreationTime` | The listed ids without a duplicate and without a gap over the cursor. |
+| PROJ-UX complete journey | `tests/e2e/project-workspaces/journey.spec.ts` the owner creates a project and finds it in the list, the owner publishes the project and records a version, the content of a project is saved and announced | The list, the project page with the version and the history, the announced success of the settings page. |
+| PROJ-UX recover from failure | `tests/e2e/project-workspaces/journey.spec.ts` an invalid field is marked and takes the focus, a project that may not be seen shows the safe page, a member without the right sees the restriction, the removal of a member needs a confirmation, the create form refuses a visitor without a session, the failure state explains the failure and offers a retry | The marked field with the focus, the kept draft, the safe page without a title, the restriction, the confirmation and the retry. |
+| PROJ-UX responsive keyboard operation | `tests/e2e/project-workspaces/journey.spec.ts` the journey has no horizontal overflow at 360, 768 and 1440 pixels, the journey works with the keyboard only, the journey works in the dark theme, and `tests/e2e/project-workspaces/accessibility.a11y.ts` (6 axe runs) | The measured overflow of zero, the keyboard operation, the rendered dark theme and the empty axe report. |

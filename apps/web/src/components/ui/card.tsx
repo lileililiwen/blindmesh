@@ -18,8 +18,13 @@ export function CardHeader({ className, ...props }: React.ComponentProps<"div">)
   return <div className={cn("mb-3 flex flex-col gap-1", className)} {...props} />;
 }
 
-export function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
-  return <h3 className={cn("text-large font-semibold", className)} {...props} />;
+/**
+ * The title of a card. It is a heading of the second level, because a card
+ * always holds a section of a page that starts with one heading of the first
+ * level.
+ */
+export function CardTitle({ className, ...props }: React.ComponentProps<"h2">) {
+  return <h2 className={cn("text-large font-semibold", className)} {...props} />;
 }
 
 export function CardDescription({ className, ...props }: React.ComponentProps<"p">) {

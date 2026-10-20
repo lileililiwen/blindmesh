@@ -21,6 +21,43 @@ export type ProfileResponse = paths["/v1/profile"]["get"]["responses"][200]["con
 export type PublicProfileResponse =
   paths["/v1/people/{username}"]["get"]["responses"][200]["content"]["application/json"];
 
+export type ProjectListResponse = paths["/v1/projects"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ProjectSummaryResponse = ProjectListResponse["items"][number];
+
+export type ProjectDetailResponse = paths["/v1/projects/{id}"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ProjectMemberResponse = ProjectDetailResponse["members"][number];
+
+export type ProjectVersionResponse = ProjectDetailResponse["versions"][number];
+
+export type ProjectStatusChangeResponse = ProjectDetailResponse["status_history"][number];
+
+/** The body of a create command of a project. */
+export type CreateProjectBody = Partial<
+  paths["/v1/projects"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of a change of a project. A field that is left out keeps its value. */
+export type UpdateProjectBody = Partial<
+  paths["/v1/projects/{id}"]["patch"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of a transition of the lifecycle of a project. */
+export type TransitionProjectBody = Partial<
+  paths["/v1/projects/{id}/transitions"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of an add member command of a project. */
+export type AddProjectMemberBody = Partial<
+  paths["/v1/projects/{id}/members/{user_id}"]["put"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of an add version command of a project. */
+export type AddProjectVersionBody = Partial<
+  paths["/v1/projects/{id}/versions"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
 /** The outcome of one API call. The status code is always the real one. */
 export type ClientResult<T> = {
   status: number;
@@ -61,6 +98,47 @@ export type BlindmeshClient = {
   updateProfile(body: UpdateProfileBody, csrfToken: string): Promise<ClientResult<ProfileResponse>>;
   /** Reads the public profile of a contributor. */
   getPublicProfile(username: string): Promise<ClientResult<PublicProfileResponse>>;
+  /** Lists the projects the caller may see. */
+  listProjects(limit?: number, cursor?: string): Promise<ClientResult<ProjectListResponse>>;
+  /** Reads the committed state of a project. */
+  getProject(id: string): Promise<ClientResult<ProjectDetailResponse>>;
+  /** Creates a project in the draft state. */
+  createProject(
+    body: CreateProjectBody,
+    csrfToken: string,
+    idempotencyKey?: string,
+  ): Promise<ClientResult<ProjectDetailResponse>>;
+  /** Saves the content or the visibility of a project. */
+  updateProject(
+    id: string,
+    body: UpdateProjectBody,
+    csrfToken: string,
+  ): Promise<ClientResult<ProjectDetailResponse>>;
+  /** Applies a transition of the lifecycle of a project. */
+  transitionProject(
+    id: string,
+    body: TransitionProjectBody,
+    csrfToken: string,
+  ): Promise<ClientResult<ProjectDetailResponse>>;
+  /** Adds a member to a project or changes the role of a member. */
+  addProjectMember(
+    id: string,
+    userReference: string,
+    body: AddProjectMemberBody,
+    csrfToken: string,
+  ): Promise<ClientResult<ProjectDetailResponse>>;
+  /** Removes a member of a project. */
+  removeProjectMember(
+    id: string,
+    userReference: string,
+    csrfToken: string,
+  ): Promise<ClientResult<never>>;
+  /** Records a released version of a project. */
+  addProjectVersion(
+    id: string,
+    body: AddProjectVersionBody,
+    csrfToken: string,
+  ): Promise<ClientResult<ProjectDetailResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -169,5 +247,73 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
       }),
     getPublicProfile: (username) =>
       request<PublicProfileResponse>(`/people/${encodeURIComponent(username)}`, { cache: "no-store" }),
+    listProjects: (limit, cursor) => {
+      const query = new URLSearchParams();
+
+      if (limit !== undefined) {
+        query.set("limit", String(limit));
+      }
+
+      if (cursor) {
+        query.set("cursor", cursor);
+      }
+
+      const suffix = query.toString();
+
+      return request<ProjectListResponse>(`/projects${suffix ? `?${suffix}` : ""}`, { cache: "no-store" });
+    },
+    getProject: (id) =>
+      request<ProjectDetailResponse>(`/projects/${encodeURIComponent(id)}`, { cache: "no-store" }),
+    createProject: (body, csrfToken, idempotencyKey) =>
+      request<ProjectDetailResponse>("/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    updateProject: (id, body, csrfToken) =>
+      request<ProjectDetailResponse>(`/projects/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    transitionProject: (id, body, csrfToken) =>
+      request<ProjectDetailResponse>(`/projects/${encodeURIComponent(id)}/transitions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    addProjectMember: (id, userReference, body, csrfToken) =>
+      request<ProjectDetailResponse>(
+        `/projects/${encodeURIComponent(id)}/members/${encodeURIComponent(userReference)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+          body: JSON.stringify(body),
+          cache: "no-store",
+        },
+      ),
+    removeProjectMember: (id, userReference, csrfToken) =>
+      request<never>(
+        `/projects/${encodeURIComponent(id)}/members/${encodeURIComponent(userReference)}`,
+        {
+          method: "DELETE",
+          headers: withCsrf(csrfToken),
+          cache: "no-store",
+        },
+      ),
+    addProjectVersion: (id, body, csrfToken) =>
+      request<ProjectDetailResponse>(`/projects/${encodeURIComponent(id)}/versions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
   };
 }

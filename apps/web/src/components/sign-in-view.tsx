@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { startSignIn, type SignInState } from "@/lib/identity";
 
 /** The paths the sign in may return to. */
-const allowedReturnPaths = ["/", "/onboarding", "/settings/profile"];
+const allowedReturnPaths = ["/", "/onboarding", "/settings/profile", "/projects", "/projects/new"];
 
 function resolveReturnPath(value: string | undefined): string | undefined {
   return value && allowedReturnPaths.includes(value) ? value : undefined;

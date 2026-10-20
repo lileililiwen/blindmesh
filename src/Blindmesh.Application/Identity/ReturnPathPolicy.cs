@@ -14,6 +14,8 @@ public static class ReturnPathPolicy
         "/",
         "/onboarding",
         "/settings/profile",
+        "/projects",
+        "/projects/new",
     ];
 
     public static bool IsAllowed(string? path) =>

@@ -1,12 +1,12 @@
 # Delivery roadmap
 
-All changes below are proposed, unimplemented, and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
+The runtime foundation, the identity package and the project package are implemented, verified and archived. The changes below that are not archived yet are proposed, unimplemented and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
 
 | Order | Target | Change | Independently accepted outcome |
 |---|---|---|---|
-| 1 | v0.1 foundation | runtime-foundation | Real web/API/database/worker bootstrap with accessible shell and health failure behavior |
-| 2 | v0.1 identity | identity-profiles | GitHub sign-in, safe sessions, onboarding, and visible profiles |
-| 3 | v0.1 projects | project-workspaces | Owners manage project/version/visibility lifecycles |
+| 1 | v0.1 foundation | runtime-foundation (archived) | Real web/API/database/worker bootstrap with accessible shell and health failure behavior |
+| 2 | v0.1 identity | identity-profiles (archived) | GitHub sign-in, safe sessions, onboarding, and visible profiles |
+| 3 | v0.1 projects | project-workspaces (archived) | Owners manage project/version/visibility lifecycles |
 | 4 | v0.1 supply | capability-directory | Contributors declare and withdraw capabilities with truthful verification status |
 | 5 | v0.1 accounting | credit-ledger | Users see audited balances; limited grants and escrow primitives conserve credits |
 | 6 | v0.2 marketplace | task-publication | Owners publish budget-backed unified tasks; visitors discover eligible work |

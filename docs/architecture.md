@@ -51,6 +51,27 @@ The identity package owns these endpoints. They are under the same prefixes as t
 
 The local OAuth fixture is reachable under `GET /v1/test/github/authorize`. It only answers with `APP_ENV=test`, and a host that asks for the fixture in another environment refuses to start.
 
+## Project endpoints
+
+The project package owns these endpoints. They are under the same prefixes as the endpoints of the foundation, and the browser reaches them under `/api/v1`.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/projects` | Lists the projects the caller may see in the list envelope `{items,next_cursor}`. The limit defaults to 20 and is capped at 100. |
+| `POST /v1/projects` | Creates a project in the draft state. The owner is the caller. It accepts an optional `Idempotency-Key`; the same key with the same payload replays the original answer. |
+| `GET /v1/projects/{id}` | Reads the committed state of a project with its membership, its versions and the history of its lifecycle. |
+| `PATCH /v1/projects/{id}` | Saves the content or the visibility of a project. It requires `expected_version`; a stale version answers 409 with the current version. |
+| `POST /v1/projects/{id}/transitions` | Applies a transition of the lifecycle. It requires `expected_version`; an illegal transition answers 409. |
+| `PUT /v1/projects/{id}/members/{user_id}` | Adds a member to a project or changes the role of a member. The segment carries the id or the name of the contributor. |
+| `DELETE /v1/projects/{id}/members/{user_id}` | Removes a member of a project. |
+| `POST /v1/projects/{id}/versions` | Records a released version of a project. |
+
+The fields of a project are the name (1 to 100 characters), the summary (at most 500 characters), the description (at most 10000 characters), the repository address (an absolute HTTPS address), the visibility (`public`, `private` or `matched`) and the expected version. A version carries a label of at most 100 characters and an optional commit reference.
+
+The visibility is enforced on every read, list, detail and membership operation. A public project is readable by everybody, also without a session. A private project and a matched project are readable by the owner and the members only, because the matching scope of the marketplace is owned by a later package. A project that the caller may not see answers 404 without its title, its counts and its members. The membership is part of the answer for the owner and the members only.
+
+The owner and the editors change the content and record the versions. Only the owner manages the members, the visibility, the pause and the archive. A member reads the project and applies for its work, but never manages it. The actor policy is checked again on every command, so a removed member and a changed visibility are honoured by the next read.
+
 ## Local runtime
 
 ```sh
@@ -129,6 +150,8 @@ Applications last 48h; accepted participants must start within 24h, then submit 
 
 These resolve the PRD's overloaded participation Accepted label: Accepted means seat confirmed, Approved means work accepted. Task aggregate status is recomputed under lock; one lost participant cannot cancel or settle others. Applied does not occupy a slot; Accepted creates a unique active lease. Unique(task_id,user_id) prevents duplicate participation, unique(task_id,slot_number) and exclusive live lease prevent overbooking. Keep status history and version fields.
 
+The project package implements the project row of the table as follows. The tables are `projects`, `project_members`, `project_versions` and `project_status_history`. A project starts as a draft and is activated by the owner or an editor, paused and archived by the owner only; an archived project is final, keeps its versions and its history and accepts no new work. Every applied transition is written to the status history in the same transaction as the project. The version of a project is the optimistic concurrency version of its content, its visibility and its state; a change of the membership is not part of it. The membership of a project is a set of members with the role viewer or editor; the owner is not a member row.
+
 ## UI contract for every change
 
 Routes are specified in each design. Navigation: public Home/Tasks/Capabilities; authenticated Dashboard/My projects/My work/Wallet/Notifications/Profile; moderator-only Admin. Default English UI with i18n-ready labels and UTC storage plus labeled local timezone rendering; additional locales/RTL are later packages.
@@ -136,6 +159,8 @@ Routes are specified in each design. Navigation: public Home/Tasks/Capabilities;
 Use shared semantic CSS tokens and shadcn/ui primitives. Light/dark theme follows pre-paint data-theme (stored preference or media query); preserve reduced-motion. Minimum 44px pointer targets, 16px body, proper heading order, single main and skip link, associated errors, aria-live status, keyboard focus order/restoration, WCAG 2.2 AA. Measure text >=4.5:1, UI/focus >=3:1 in both themes. No color-only status.
 
 The identity package adds the routes `/sign-in`, `/onboarding`, `/settings/profile` and `/people/{username}`. The navigation of the shell shows the state of the session: a visitor sees the sign in, a contributor sees the link to the public profile, the profile settings and the sign out. A private route without a session offers the sign in with an allowlisted return path.
+
+The project package adds the routes `/projects`, `/projects/new`, `/projects/{id}` and `/projects/{id}/settings`. The list shows the projects the visitor may see and explains the next action when it is empty. The create form and the settings page keep the draft of the contributor after a refusal, mark the field of a validation error and give it the focus, and announce a success only after the server committed it. The settings page shows the content, the visibility, the lifecycle, the team and the versions of a project, and it explains the restriction to a member without the right to change it. The archive and the removal of a member confirm their consequences. A project that may not be seen shows the same safe page as a project that does not exist.
 
 360px: one column, dialogs fit viewport, tables become labeled lists; 768px: collapsed navigation; 1440px: persistent navigation and restrained readable widths. No page-level horizontal scrolling. Every route defines initial/loading/empty/validation/error/unavailable/permission/success/recovery; preserve draft values after recoverable errors, never announce success before server commit. Destructive operations confirm consequences and restore focus. Server-only private reads use no-store; TanStack keys include actor identity and are cleared on logout; public views omit sensitive fields and query caches.
 

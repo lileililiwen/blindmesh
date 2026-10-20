@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "requirements.md",
-  "selected": "evidence-findings",
+  "selected": "moderation-arbitration",
   "changes": [
     {
       "id": "runtime-foundation",
@@ -87,8 +87,8 @@
         "participation-execution"
       ],
       "requirement_prefix": "EVID",
-      "status": "proposed",
-      "readiness": "next-in-order",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-20",
       "module": "src/Blindmesh.Domain/Findings, src/Blindmesh.Application/Findings, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {
@@ -99,7 +99,7 @@
       ],
       "requirement_prefix": "MOD",
       "status": "proposed",
-      "readiness": "implementation-ready-after-prerequisites",
+      "readiness": "next-in-order",
       "module": "src/Blindmesh.Domain/Moderation, src/Blindmesh.Application/Moderation, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {

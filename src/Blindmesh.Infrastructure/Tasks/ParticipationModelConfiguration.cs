@@ -109,8 +109,8 @@ public static class ParticipationModelConfiguration
             entity.Property(change => change.Id).HasColumnName("id");
             entity.Property(change => change.ParticipationId).HasColumnName("participation_id").IsRequired();
             entity.Property(change => change.TaskId).HasColumnName("task_id").IsRequired();
-            entity.Property(change => change.FromStatus).HasColumnName("from_status").HasMaxLength(16).IsRequired();
-            entity.Property(change => change.ToStatus).HasColumnName("to_status").HasMaxLength(16).IsRequired();
+            entity.Property(change => change.FromStatus).HasColumnName("from_status").HasMaxLength(32).IsRequired();
+            entity.Property(change => change.ToStatus).HasColumnName("to_status").HasMaxLength(32).IsRequired();
             entity.Property(change => change.ChangedBy).HasColumnName("changed_by").IsRequired();
             entity.Property(change => change.ChangedAt).HasColumnName("changed_at").HasColumnType("timestamptz").IsRequired();
             entity.HasIndex(change => new { change.ParticipationId, change.ChangedAt })

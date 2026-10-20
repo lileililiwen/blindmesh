@@ -78,6 +78,57 @@ export type ParticipationDetailResponse =
 
 export type ParticipationStatusChangeResponse = ParticipationDetailResponse["history"][number];
 
+export type SubmissionDetailResponse =
+  paths["/v1/submissions/{id}"]["get"]["responses"][200]["content"]["application/json"];
+
+export type SubmissionRevisionResponse = SubmissionDetailResponse["revisions"][number];
+
+export type SubmissionFindingResponse = SubmissionDetailResponse["findings"][number];
+
+export type SubmissionHistoryResponse = SubmissionDetailResponse["history"][number];
+
+export type SubmissionSummaryResponse =
+  paths["/v1/projects/{id}/reviews"]["get"]["responses"][200]["content"]["application/json"][number];
+
+export type FindingDetailResponse =
+  paths["/v1/findings/{id}"]["get"]["responses"][200]["content"]["application/json"];
+
+export type AttachmentViewResponse =
+  paths["/v1/attachments/intents"]["post"]["responses"][201]["content"]["application/json"];
+
+export type AttachmentDownloadResponse =
+  paths["/v1/attachments/{id}/download"]["get"]["responses"][200]["content"]["application/json"];
+
+/** The body of the evidence of a seat. It holds no credential. */
+export type SubmitEvidenceBody = Partial<
+  paths["/v1/participations/{id}/submissions"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the acceptance of the work of a seat. */
+export type AcceptSubmissionBody = Partial<
+  paths["/v1/submissions/{id}/accept"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the request for the one correction of a seat. */
+export type RequestChangesBody = Partial<
+  paths["/v1/submissions/{id}/request-changes"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the dispute about the completion of a seat. */
+export type DisputeSubmissionBody = Partial<
+  paths["/v1/submissions/{id}/dispute"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the classification of a finding. */
+export type PatchFindingBody = Partial<
+  paths["/v1/findings/{id}"]["patch"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the declaration of a private file of the evidence. */
+export type AttachmentIntentBody = Partial<
+  paths["/v1/attachments/intents"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
 /** The body of an application for a slot of a task. It holds no credential. */
 export type ApplyForSlotBody = Partial<
   paths["/v1/tasks/{id}/applications"]["post"]["requestBody"]["content"]["application/json"]
@@ -333,6 +384,62 @@ export type BlindmeshClient = {
     csrfToken: string,
     idempotencyKey: string,
   ): Promise<ClientResult<ParticipationDetailResponse>>;
+  /** Sends the protected evidence of a seat that the caller runs. */
+  submitEvidence(
+    participationId: string,
+    body: SubmitEvidenceBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<SubmissionDetailResponse>>;
+  /** Reads the committed state of the evidence of a seat. */
+  getSubmission(id: string): Promise<ClientResult<SubmissionDetailResponse>>;
+  /** Lists the evidence of a project that waits for the owner. */
+  listProjectReviews(projectId: string): Promise<ClientResult<SubmissionSummaryResponse[]>>;
+  /** Accepts the work of a seat and settles the credits of the contributor. */
+  acceptSubmission(
+    id: string,
+    body: AcceptSubmissionBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<SubmissionDetailResponse>>;
+  /** Asks the contributor for the one correction of the evidence. */
+  requestSubmissionChanges(
+    id: string,
+    body: RequestChangesBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<SubmissionDetailResponse>>;
+  /** Opens a dispute about the completion of a seat. */
+  disputeSubmission(
+    id: string,
+    body: DisputeSubmissionBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<SubmissionDetailResponse>>;
+  /** Reads one finding of the evidence with its history. */
+  getFinding(id: string): Promise<ClientResult<FindingDetailResponse>>;
+  /** Classifies one finding of the evidence. */
+  patchFinding(
+    id: string,
+    body: PatchFindingBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<FindingDetailResponse>>;
+  /** Declares a private file of the evidence. */
+  createAttachmentIntent(
+    body: AttachmentIntentBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<AttachmentViewResponse>>;
+  /** Uploads the bytes of a quarantined file and releases it. */
+  completeAttachment(
+    attachmentId: string,
+    file: File,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<AttachmentViewResponse>>;
+  /** Signs the short address of a private file of the evidence. */
+  downloadAttachment(id: string): Promise<ClientResult<AttachmentDownloadResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -754,5 +861,92 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
         body: JSON.stringify({}),
         cache: "no-store",
       }),
+    submitEvidence: (participationId, body, csrfToken, idempotencyKey) =>
+      request<SubmissionDetailResponse>(`/participations/${encodeURIComponent(participationId)}/submissions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    getSubmission: (id) => request<SubmissionDetailResponse>(`/submissions/${encodeURIComponent(id)}`, { cache: "no-store" }),
+    listProjectReviews: (projectId) =>
+      request<SubmissionSummaryResponse[]>(`/projects/${encodeURIComponent(projectId)}/reviews`, { cache: "no-store" }),
+    acceptSubmission: (id, body, csrfToken, idempotencyKey) =>
+      request<SubmissionDetailResponse>(`/submissions/${encodeURIComponent(id)}/accept`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    requestSubmissionChanges: (id, body, csrfToken, idempotencyKey) =>
+      request<SubmissionDetailResponse>(`/submissions/${encodeURIComponent(id)}/request-changes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    disputeSubmission: (id, body, csrfToken, idempotencyKey) =>
+      request<SubmissionDetailResponse>(`/submissions/${encodeURIComponent(id)}/dispute`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    getFinding: (id) => request<FindingDetailResponse>(`/findings/${encodeURIComponent(id)}`, { cache: "no-store" }),
+    patchFinding: (id, body, csrfToken, idempotencyKey) =>
+      request<FindingDetailResponse>(`/findings/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    createAttachmentIntent: (body, csrfToken, idempotencyKey) =>
+      request<AttachmentViewResponse>("/attachments/intents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    completeAttachment: (attachmentId, file, csrfToken, idempotencyKey) => {
+      const form = new FormData();
+      form.append("attachment_id", attachmentId);
+      form.append("file", file);
+
+      return request<AttachmentViewResponse>("/attachments/complete", {
+        method: "POST",
+        headers: {
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: form,
+        cache: "no-store",
+      });
+    },
+    downloadAttachment: (id) =>
+      request<AttachmentDownloadResponse>(`/attachments/${encodeURIComponent(id)}/download`, { cache: "no-store" }),
   };
 }

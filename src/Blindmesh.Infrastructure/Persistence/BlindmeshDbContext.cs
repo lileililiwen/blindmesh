@@ -4,6 +4,7 @@ using Blindmesh.Domain.Identity;
 using Blindmesh.Domain.Projects;
 using Blindmesh.Infrastructure.Capabilities;
 using Blindmesh.Infrastructure.Credits;
+using Blindmesh.Infrastructure.Findings;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Blindmesh.Infrastructure.Projects;
@@ -72,6 +73,18 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
 
     public DbSet<Blindmesh.Domain.Tasks.ParticipationStatusChange> ParticipationStatusChanges => Set<Blindmesh.Domain.Tasks.ParticipationStatusChange>();
 
+    public DbSet<Blindmesh.Domain.Findings.Submission> Submissions => Set<Blindmesh.Domain.Findings.Submission>();
+
+    public DbSet<Blindmesh.Domain.Findings.SubmissionRevision> SubmissionRevisions => Set<Blindmesh.Domain.Findings.SubmissionRevision>();
+
+    public DbSet<Blindmesh.Domain.Findings.SubmissionStatusChange> SubmissionHistory => Set<Blindmesh.Domain.Findings.SubmissionStatusChange>();
+
+    public DbSet<Blindmesh.Domain.Findings.Finding> Findings => Set<Blindmesh.Domain.Findings.Finding>();
+
+    public DbSet<Blindmesh.Domain.Findings.FindingHistoryEntry> FindingHistory => Set<Blindmesh.Domain.Findings.FindingHistoryEntry>();
+
+    public DbSet<Blindmesh.Domain.Findings.Attachment> Attachments => Set<Blindmesh.Domain.Findings.Attachment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OutboxMessageEntity>(entity =>
@@ -122,5 +135,9 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // and are not changed by any other module.
         modelBuilder.ApplyTaskModel();
         modelBuilder.ApplyParticipationModel();
+
+        // The tables of the findings module. They are owned by the findings
+        // package and are not changed by any other module.
+        modelBuilder.ApplyFindingsModel();
     }
 }

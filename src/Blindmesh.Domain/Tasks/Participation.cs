@@ -124,10 +124,10 @@ public sealed class ParticipationStatusChange
 
     public Guid TaskId { get; set; }
 
-    [MaxLength(16)]
+    [MaxLength(32)]
     public string FromStatus { get; set; } = string.Empty;
 
-    [MaxLength(16)]
+    [MaxLength(32)]
     public string ToStatus { get; set; } = string.Empty;
 
     public Guid ChangedBy { get; set; }

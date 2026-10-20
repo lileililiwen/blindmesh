@@ -4,6 +4,7 @@ using Blindmesh.Api.Configuration;
 using Blindmesh.Api.Endpoints;
 using Blindmesh.Api.Endpoints.Capabilities;
 using Blindmesh.Api.Endpoints.Credits;
+using Blindmesh.Api.Endpoints.Findings;
 using Blindmesh.Api.Endpoints.Identity;
 using Blindmesh.Api.Endpoints.Projects;
 using Blindmesh.Api.Endpoints.Tasks;
@@ -12,8 +13,10 @@ using Blindmesh.Application.Runtime;
 using Blindmesh.Infrastructure;
 using Blindmesh.Infrastructure.Capabilities;
 using Blindmesh.Infrastructure.Credits;
+using Blindmesh.Infrastructure.Findings;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Projects;
+using Blindmesh.Infrastructure.Storage;
 using Blindmesh.Infrastructure.Tasks;
 using Microsoft.OpenApi;
 
@@ -40,9 +43,11 @@ builder.Services.AddBlindmeshProjects();
 builder.Services.AddBlindmeshCapabilities();
 builder.Services.AddBlindmeshCredits();
 builder.Services.AddBlindmeshTasks();
+builder.Services.AddBlindmeshFindings();
 builder.Services.AddScoped<RuntimeHeartbeatService>();
 builder.Services.AddScoped<IdentitySessionGuard>();
 builder.Services.AddHostedService<RuntimePolicyHostedService>();
+builder.Services.AddHostedService<ObjectStorageInitializer>();
 builder.Services.AddOpenApi("v1", options =>
 {
     options.AddDocumentTransformer((document, _, _) =>
@@ -80,6 +85,7 @@ app.MapCapabilityEndpoints();
 app.MapCreditEndpoints();
 app.MapTaskEndpoints();
 app.MapParticipationEndpoints();
+app.MapFindingsEndpoints();
 app.MapLocalGitHubFixtureEndpoints();
 app.MapOpenApi("/v1/openapi/{documentName}.json");
 

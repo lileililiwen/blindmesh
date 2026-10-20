@@ -162,6 +162,12 @@ export function ProjectDetail({ id }: { id: string }) {
         <Button asChild variant="secondary">
           <Link href={`/projects/${project.id}/tasks`}>The tasks of the project</Link>
         </Button>
+
+        {mayManage ? (
+          <Button asChild variant="secondary">
+            <Link href={`/projects/${project.id}/reviews`}>The reviews of the project</Link>
+          </Button>
+        ) : null}
       </div>
 
       {project.summary ? (

@@ -56,6 +56,12 @@ public interface IParticipationStore
     /// <summary>True when at least one participation of the task is running.</summary>
     Task<bool> HasRunningParticipationAsync(Guid taskId, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// True when at least one participation of the task waits for the review of
+    /// the owner or for the arbitration.
+    /// </summary>
+    Task<bool> HasReviewPendingParticipationAsync(Guid taskId, CancellationToken cancellationToken);
+
     Task AddParticipationAsync(Participation participation, CancellationToken cancellationToken);
 
     Task AddApplicationAsync(TaskApplication application, CancellationToken cancellationToken);

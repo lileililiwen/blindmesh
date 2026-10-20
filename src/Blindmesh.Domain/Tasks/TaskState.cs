@@ -22,6 +22,19 @@ public enum TaskState
     /// </summary>
     InProgress,
 
+    /// <summary>
+    /// The task waits for the review of a submission or for the arbitration of
+    /// a dispute. The admission stays open, because the slots that are still
+    /// free may be filled.
+    /// </summary>
+    Review,
+
+    /// <summary>
+    /// Every slot of the task is settled or refunded. The escrow of the task is
+    /// empty and the task accepts no work anymore.
+    /// </summary>
+    Completed,
+
     /// <summary>The admission of the task is closed. The unused slots are refunded.</summary>
     Cancelled,
 }

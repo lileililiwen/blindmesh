@@ -2,6 +2,7 @@ using Blindmesh.Infrastructure;
 using Blindmesh.Infrastructure.Capabilities;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Credits;
+using Blindmesh.Infrastructure.Findings;
 using Blindmesh.Infrastructure.Projects;
 using Blindmesh.Infrastructure.Tasks;
 using Blindmesh.Worker;
@@ -20,10 +21,12 @@ builder.Services.AddBlindmeshProjects();
 builder.Services.AddBlindmeshCapabilities();
 builder.Services.AddBlindmeshCredits();
 builder.Services.AddBlindmeshTasks();
+builder.Services.AddBlindmeshFindings();
 
 builder.Services.AddSingleton<IOutboxHandler, RuntimeHeartbeatHandler>();
 builder.Services.AddHostedService<OutboxClaimService>();
 builder.Services.AddHostedService<ParticipationDeadlineService>();
+builder.Services.AddHostedService<ReviewDeadlineService>();
 
 var host = builder.Build();
 

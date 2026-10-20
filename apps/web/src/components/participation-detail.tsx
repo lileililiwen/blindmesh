@@ -231,6 +231,14 @@ export function ParticipationDetail({ participationId }: { participationId: stri
           </Button>
         ) : null}
 
+        {signedIn && (seat.state === "running" || seat.state === "changes_requested") ? (
+          <Button asChild variant="secondary">
+            <Link href={`/work/${participationId}/submit`}>
+              {seat.state === "changes_requested" ? "Answer the correction" : "Send the evidence"}
+            </Link>
+          </Button>
+        ) : null}
+
         <Button asChild variant="secondary">
           <Link href="/work">Back to your work</Link>
         </Button>

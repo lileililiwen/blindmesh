@@ -911,10 +911,12 @@ public sealed class ParticipationService(
 
     /// <summary>
     /// Recomputes the aggregate status of the task under the lock of the task.
-    /// A task that carries running work is in progress; a task without running
+    /// A task that carries running work is in progress; a task that waits for
+    /// the review of a submission or of a dispute is in review; a task whose
+    /// slots are all settled or refunded is completed; a task without running
     /// work is open again. A cancelled task keeps its state.
     /// </summary>
-    private async Task RecomputeTaskStatusAsync(MarketplaceTask task, CancellationToken cancellationToken)
+    public async Task RecomputeTaskStatusAsync(MarketplaceTask task, CancellationToken cancellationToken)
     {
         if (task.Status is TaskState.Draft or TaskState.Cancelled)
         {
@@ -922,7 +924,19 @@ public sealed class ParticipationService(
         }
 
         var running = await store.HasRunningParticipationAsync(task.Id, cancellationToken);
-        var next = running ? TaskState.InProgress : TaskState.Open;
+        var pending = await store.HasReviewPendingParticipationAsync(task.Id, cancellationToken);
+        var slots = await tasks.ListSlotsAsync([task.Id], cancellationToken);
+        var slotRows = slots.GetValueOrDefault(task.Id, []);
+        var terminal = slotRows.Count > 0 &&
+            slotRows.All(slot => slot.State is TaskSlotState.Settled or TaskSlotState.Refunded);
+
+        var next = running
+            ? TaskState.InProgress
+            : pending
+                ? TaskState.Review
+                : terminal
+                    ? TaskState.Completed
+                    : TaskState.Open;
 
         if (task.Status == next)
         {
@@ -1052,6 +1066,7 @@ public sealed class ParticipationService(
             released,
             released ? task.Scope : null,
             released ? stepViews : [],
+            TaskService.ModeNames(task.Modes),
             history
                 .Select(change => new ParticipationStatusChangeView(
                     change.FromStatus,
@@ -1192,6 +1207,10 @@ public sealed class ParticipationService(
         ParticipationState.Applied => "applied",
         ParticipationState.Accepted => "accepted",
         ParticipationState.Running => "running",
+        ParticipationState.Submitted => "submitted",
+        ParticipationState.ChangesRequested => "changes_requested",
+        ParticipationState.Approved => "approved",
+        ParticipationState.Disputed => "disputed",
         ParticipationState.Declined => "declined",
         ParticipationState.Withdrawn => "withdrawn",
         ParticipationState.Expired => "expired",

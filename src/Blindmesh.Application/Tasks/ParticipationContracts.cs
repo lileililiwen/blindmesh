@@ -68,6 +68,7 @@ public sealed record ParticipationDetailView(
     bool InstructionsReleased,
     string? Scope,
     IReadOnlyList<TaskStepView> Steps,
+    IReadOnlyList<string> Modes,
     IReadOnlyList<ParticipationStatusChangeView> History,
     bool CanAccept,
     bool CanDecline,

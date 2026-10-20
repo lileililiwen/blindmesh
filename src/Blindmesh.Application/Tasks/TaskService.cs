@@ -775,6 +775,8 @@ public sealed class TaskService(
     {
         TaskState.Open => "open",
         TaskState.InProgress => "in_progress",
+        TaskState.Review => "review",
+        TaskState.Completed => "completed",
         TaskState.Cancelled => "cancelled",
         _ => "draft",
     };

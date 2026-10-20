@@ -5,6 +5,7 @@ using Blindmesh.Infrastructure.Persistence;
 using Blindmesh.Tests.Runtime;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Blindmesh.Tests.Identity;
 
@@ -21,7 +22,10 @@ internal sealed class IdentityTestHost : IDisposable
 
     private readonly BlindmeshApiFactory _factory;
 
-    public IdentityTestHost(RuntimeFixture fixture, IDictionary<string, string?>? overrides = null)
+    public IdentityTestHost(
+        RuntimeFixture fixture,
+        IDictionary<string, string?>? overrides = null,
+        Action<IServiceCollection>? configureServices = null)
     {
         Fixture = fixture;
 
@@ -48,7 +52,7 @@ internal sealed class IdentityTestHost : IDisposable
             }
         }
 
-        _factory = new BlindmeshApiFactory(settings);
+        _factory = new BlindmeshApiFactory(settings, configureServices: configureServices);
         Client = _factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             HandleCookies = true,

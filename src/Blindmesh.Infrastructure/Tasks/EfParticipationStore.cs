@@ -74,6 +74,14 @@ public sealed class EfParticipationStore(BlindmeshDbContext dbContext) : IPartic
                 participation.State == ParticipationState.Running,
             cancellationToken);
 
+    public Task<bool> HasReviewPendingParticipationAsync(Guid taskId, CancellationToken cancellationToken) =>
+        dbContext.Participations.AnyAsync(
+            participation => participation.TaskId == taskId &&
+                (participation.State == ParticipationState.Submitted ||
+                    participation.State == ParticipationState.ChangesRequested ||
+                    participation.State == ParticipationState.Disputed),
+            cancellationToken);
+
     public Task AddParticipationAsync(Participation participation, CancellationToken cancellationToken) =>
         dbContext.Participations.AddAsync(participation, cancellationToken).AsTask();
 

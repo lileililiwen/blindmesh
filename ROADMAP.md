@@ -1,6 +1,6 @@
 # Delivery roadmap
 
-The runtime foundation, the identity package, the project package, the capability package, the credit package, the task publication package and the participation execution package are implemented, verified and archived. The changes below that are not archived yet are proposed, unimplemented and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
+The runtime foundation, the identity package, the project package, the capability package, the credit package, the task publication package, the participation execution package and the evidence package are implemented, verified and archived. The changes below that are not archived yet are proposed, unimplemented and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
 
 | Order | Target | Change | Independently accepted outcome |
 |---|---|---|---|
@@ -11,7 +11,7 @@ The runtime foundation, the identity package, the project package, the capabilit
 | 5 | v0.1 accounting | credit-ledger (archived) | Users see audited balances; limited grants and escrow primitives conserve credits |
 | 6 | v0.2 marketplace | task-publication (archived) | Owners publish budget-backed unified tasks; visitors discover eligible work |
 | 7 | v0.2 execution | participation-execution (archived) | Qualified contributors apply, occupy independent slots, start, and withdraw safely |
-| 8 | v0.2 feedback | evidence-findings | Contributors submit protected evidence; owners review and settle work |
+| 8 | v0.2 feedback | evidence-findings (archived) | Contributors submit protected evidence; owners review and settle work |
 | 9 | v0.3 safety | moderation-arbitration | Reports and payment disputes reach auditable moderator decisions |
 | 10 | v0.3 trust | reputation-history | Completed contributions produce non-purchasable, explainable reputation |
 | 11 | v0.3 communication | notification-delivery | In-app and SMTP notifications survive retries without leaking private content |

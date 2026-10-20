@@ -67,6 +67,16 @@ services:
       APP_ENV: "${BLINDMESH_APP_ENV:-test}"
       Blindmesh__Database__ConnectionString: "Host=postgres;Port=5432;Database=blindmesh;Username=blindmesh;Password=blindmesh"
       Blindmesh__ObjectStorage__Endpoint: "http://object-storage:9000"
+      # The browser of the host reaches the private bucket at the published
+      # port of the object storage, so the signed address of a file works in
+      # the browser of the local stack.
+      Blindmesh__ObjectStorage__PublicEndpoint: "http://127.0.0.1:${BLINDMESH_STORAGE_PORT:-9000}"
+      Blindmesh__ObjectStorage__Bucket: "blindmesh-evidence"
+      # The credentials of the local development stack. They are the
+      # development credentials of the compose stack and they never reach a
+      # product secret, a log or an answer.
+      Blindmesh__ObjectStorage__AccessKey: "${BLINDMESH_STORAGE_ACCESS_KEY:-blindmesh}"
+      Blindmesh__ObjectStorage__SecretKey: "${BLINDMESH_STORAGE_SECRET_KEY:-blindmesh-secret}"
       Blindmesh__Mail__Host: "mail"
       Blindmesh__Mail__Port: "1025"
       Blindmesh__Identity__PublicBaseUrl: "http://127.0.0.1:${BLINDMESH_PROXY_PORT:-8080}"
@@ -95,6 +105,9 @@ services:
     environment:
       Blindmesh__Database__ConnectionString: "Host=postgres;Port=5432;Database=blindmesh;Username=blindmesh;Password=blindmesh"
       Blindmesh__ObjectStorage__Endpoint: "http://object-storage:9000"
+      Blindmesh__ObjectStorage__Bucket: "blindmesh-evidence"
+      Blindmesh__ObjectStorage__AccessKey: "${BLINDMESH_STORAGE_ACCESS_KEY:-blindmesh}"
+      Blindmesh__ObjectStorage__SecretKey: "${BLINDMESH_STORAGE_SECRET_KEY:-blindmesh-secret}"
       Blindmesh__Mail__Host: "mail"
       Blindmesh__Mail__Port: "1025"
     depends_on:

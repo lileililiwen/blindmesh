@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { TaskModeBadges, TaskStateBadge, TaskVisibilityBadge } from "@/components/task-badges";
+import { TaskApplications } from "@/components/task-applications";
 import { TaskForm } from "@/components/task-form";
 import { useSession } from "@/components/session-provider";
 import { Button } from "@/components/ui/button";
@@ -304,10 +305,18 @@ export function TaskDetail({ taskId }: { taskId: string }) {
         </Card>
       ) : null}
 
+      {task.can_manage ? <TaskApplications taskId={task.id} /> : null}
+
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <Button asChild variant="secondary">
           <Link href={`/tasks/${task.id}/eligibility`}>Check my eligibility</Link>
         </Button>
+
+        {signedIn && task.status === "open" ? (
+          <Button asChild variant="primary">
+            <Link href={`/tasks/${task.id}/apply`}>Apply for a slot</Link>
+          </Button>
+        ) : null}
 
         {signedIn && task.can_manage && task.status === "draft" && !editing ? (
           <Button type="button" variant="secondary" onClick={() => setEditing(true)}>

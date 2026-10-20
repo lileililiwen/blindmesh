@@ -23,7 +23,7 @@ public sealed class PublishedTaskConditionReader(ITaskStore store, ProjectServic
     {
         var task = await store.FindTaskAsync(taskId, cancellationToken);
 
-        if (task is null || task.Status != TaskState.Open)
+        if (task is null || task.Status is not (TaskState.Open or TaskState.InProgress))
         {
             return null;
         }

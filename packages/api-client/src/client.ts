@@ -69,6 +69,20 @@ export type TaskSlotResponse = TaskDetailResponse["slots"][number];
 
 export type TaskStatusChangeResponse = TaskDetailResponse["status_history"][number];
 
+export type ParticipationListResponse = paths["/v1/work"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ParticipationSummaryResponse = ParticipationListResponse["items"][number];
+
+export type ParticipationDetailResponse =
+  paths["/v1/participations/{id}"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ParticipationStatusChangeResponse = ParticipationDetailResponse["history"][number];
+
+/** The body of an application for a slot of a task. It holds no credential. */
+export type ApplyForSlotBody = Partial<
+  paths["/v1/tasks/{id}/applications"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
 /** The body of a write command of a task. It holds no credential. */
 export type TaskBody = Partial<
   paths["/v1/tasks"]["post"]["requestBody"]["content"]["application/json"]
@@ -278,6 +292,47 @@ export type BlindmeshClient = {
     csrfToken: string,
     idempotencyKey: string,
   ): Promise<ClientResult<TaskDetailResponse>>;
+  /** Lists the work of the signed in contributor. */
+  listWork(limit?: number, cursor?: string): Promise<ClientResult<ParticipationListResponse>>;
+  /** Lists the applications of a task of the owner. */
+  listTaskApplications(
+    taskId: string,
+    limit?: number,
+    cursor?: string,
+  ): Promise<ClientResult<ParticipationListResponse>>;
+  /** Reads the committed state of one seat of a task. */
+  getParticipation(id: string): Promise<ClientResult<ParticipationDetailResponse>>;
+  /** Applies for one slot of a published task. */
+  applyForSlot(
+    taskId: string,
+    body: ApplyForSlotBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<ParticipationDetailResponse>>;
+  /** Accepts an application and leases one slot of the task. */
+  acceptParticipation(
+    id: string,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<ParticipationDetailResponse>>;
+  /** Declines an application of a task. */
+  declineParticipation(
+    id: string,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<ParticipationDetailResponse>>;
+  /** Starts the work of an accepted seat. */
+  startParticipation(
+    id: string,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<ParticipationDetailResponse>>;
+  /** Withdraws a seat before the work starts. */
+  withdrawParticipation(
+    id: string,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<ParticipationDetailResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -600,6 +655,96 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
       }),
     cancelTask: (id, csrfToken, idempotencyKey) =>
       request<TaskDetailResponse>(`/tasks/${encodeURIComponent(id)}/cancel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify({}),
+        cache: "no-store",
+      }),
+    listWork: (limit, cursor) => {
+      const query = new URLSearchParams();
+
+      if (limit !== undefined) {
+        query.set("limit", String(limit));
+      }
+
+      if (cursor) {
+        query.set("cursor", cursor);
+      }
+
+      const suffix = query.toString();
+
+      return request<ParticipationListResponse>(`/work${suffix ? `?${suffix}` : ""}`, { cache: "no-store" });
+    },
+    listTaskApplications: (taskId, limit, cursor) => {
+      const query = new URLSearchParams();
+
+      if (limit !== undefined) {
+        query.set("limit", String(limit));
+      }
+
+      if (cursor) {
+        query.set("cursor", cursor);
+      }
+
+      const suffix = query.toString();
+
+      return request<ParticipationListResponse>(
+        `/tasks/${encodeURIComponent(taskId)}/applications${suffix ? `?${suffix}` : ""}`,
+        { cache: "no-store" },
+      );
+    },
+    getParticipation: (id) =>
+      request<ParticipationDetailResponse>(`/participations/${encodeURIComponent(id)}`, { cache: "no-store" }),
+    applyForSlot: (taskId, body, csrfToken, idempotencyKey) =>
+      request<ParticipationDetailResponse>(`/tasks/${encodeURIComponent(taskId)}/applications`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    acceptParticipation: (id, csrfToken, idempotencyKey) =>
+      request<ParticipationDetailResponse>(`/participations/${encodeURIComponent(id)}/accept`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify({}),
+        cache: "no-store",
+      }),
+    declineParticipation: (id, csrfToken, idempotencyKey) =>
+      request<ParticipationDetailResponse>(`/participations/${encodeURIComponent(id)}/decline`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify({}),
+        cache: "no-store",
+      }),
+    startParticipation: (id, csrfToken, idempotencyKey) =>
+      request<ParticipationDetailResponse>(`/participations/${encodeURIComponent(id)}/start`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify({}),
+        cache: "no-store",
+      }),
+    withdrawParticipation: (id, csrfToken, idempotencyKey) =>
+      request<ParticipationDetailResponse>(`/participations/${encodeURIComponent(id)}/withdraw`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

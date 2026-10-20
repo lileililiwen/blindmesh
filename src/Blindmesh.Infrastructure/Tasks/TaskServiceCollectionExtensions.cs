@@ -13,7 +13,9 @@ public static class TaskServiceCollectionExtensions
     public static IServiceCollection AddBlindmeshTasks(this IServiceCollection services)
     {
         services.AddScoped<ITaskStore, EfTaskStore>();
+        services.AddScoped<IParticipationStore, EfParticipationStore>();
         services.AddScoped<TaskService>();
+        services.AddScoped<ParticipationService>();
 
         return services;
     }

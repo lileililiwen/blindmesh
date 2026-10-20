@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text;
 
 namespace Blindmesh.Tests.Runtime;
 
@@ -11,6 +10,13 @@ public sealed record ProcessResult(int ExitCode, string StandardOutput, string S
 /// <summary>Runs a native command and captures its real output.</summary>
 public static class ProcessRunner
 {
+    /// <summary>
+    /// The grace period for the output of a child that has already exited. A
+    /// child that leaves a grandchild behind keeps the write end of the pipe
+    /// open, so the end of the output may never arrive.
+    /// </summary>
+    private static readonly TimeSpan OutputGracePeriod = TimeSpan.FromSeconds(30);
+
     public static async Task<ProcessResult> RunAsync(
         string fileName,
         IEnumerable<string> arguments,
@@ -41,19 +47,28 @@ public static class ProcessRunner
 
         using var process = new Process { StartInfo = startInfo };
 
-        var standardOutput = new StringBuilder();
-        var standardError = new StringBuilder();
+        process.EnableRaisingEvents = true;
 
-        process.OutputDataReceived += (_, data) => standardOutput.AppendLine(data.Data);
-        process.ErrorDataReceived += (_, data) => standardError.AppendLine(data.Data);
+        var exited = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        process.Exited += (_, _) => exited.TrySetResult();
 
         process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
+
+        var standardOutput = process.StandardOutput.ReadToEndAsync();
+        var standardError = process.StandardError.ReadToEndAsync();
 
         using var cancellation = new CancellationTokenSource(timeout ?? TimeSpan.FromMinutes(10));
-        await process.WaitForExitAsync(cancellation.Token);
 
-        return new ProcessResult(process.ExitCode, standardOutput.ToString(), standardError.ToString());
+        await exited.Task.WaitAsync(cancellation.Token);
+
+        // The exit of the child does not end the pipe when a grandchild keeps
+        // it open, so the read of the output is bounded and the answer holds
+        // the output that was read.
+        await Task.WhenAny(Task.WhenAll(standardOutput, standardError), Task.Delay(OutputGracePeriod));
+
+        return new ProcessResult(
+            process.ExitCode,
+            standardOutput.IsCompletedSuccessfully ? standardOutput.Result : string.Empty,
+            standardError.IsCompletedSuccessfully ? standardError.Result : string.Empty);
     }
 }

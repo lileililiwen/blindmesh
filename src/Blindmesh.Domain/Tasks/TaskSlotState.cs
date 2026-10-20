@@ -10,6 +10,13 @@ public enum TaskSlotState
     /// <summary>The slot is free and holds its part of the reserved budget.</summary>
     Available,
 
+    /// <summary>
+    /// The slot is held by one accepted contributor that has not started the
+    /// work yet. The slot keeps its part of the reserved budget and the
+    /// contributor has to start within the start window.
+    /// </summary>
+    Leased,
+
     /// <summary>A contributor started the work of the slot.</summary>
     Active,
 

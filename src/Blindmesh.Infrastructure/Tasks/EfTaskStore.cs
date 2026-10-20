@@ -45,6 +45,33 @@ public sealed class EfTaskStore(BlindmeshDbContext dbContext) : ITaskStore
         return await dbContext.Tasks.FirstOrDefaultAsync(task => task.Id == taskId, cancellationToken);
     }
 
+    public async Task<TaskSlot?> LockSlotAsync(Guid slotId, CancellationToken cancellationToken)
+    {
+        var transaction = dbContext.Database.CurrentTransaction
+            ?? throw new InvalidOperationException(
+                "A task command must run inside the transaction of the caller.");
+
+        var connection = dbContext.Database.GetDbConnection();
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction.GetDbTransaction();
+        command.CommandText = "SELECT id FROM task_slots WHERE id = @id FOR UPDATE";
+
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "id";
+        parameter.Value = slotId;
+        command.Parameters.Add(parameter);
+
+        var locked = await command.ExecuteScalarAsync(cancellationToken);
+
+        if (locked is null)
+        {
+            return null;
+        }
+
+        return await dbContext.TaskSlots.FirstOrDefaultAsync(slot => slot.Id == slotId, cancellationToken);
+    }
+
     public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<TaskRequirement>>> ListRequirementsAsync(
         IReadOnlyCollection<Guid> taskIds,
         CancellationToken cancellationToken)
@@ -152,7 +179,7 @@ public sealed class EfTaskStore(BlindmeshDbContext dbContext) : ITaskStore
             rows = rows.Where(row =>
                 (row.Project.Visibility == ProjectVisibility.Public &&
                  row.Project.Status == ProjectStatus.Active &&
-                 row.Task.Status == TaskState.Open &&
+                 (row.Task.Status == TaskState.Open || row.Task.Status == TaskState.InProgress) &&
                  (row.Task.Visibility == TaskVisibility.Public ||
                   row.Task.Visibility == TaskVisibility.Matched)) ||
                 row.Project.OwnerId == userId ||
@@ -163,7 +190,7 @@ public sealed class EfTaskStore(BlindmeshDbContext dbContext) : ITaskStore
             rows = rows.Where(row =>
                 row.Project.Visibility == ProjectVisibility.Public &&
                 row.Project.Status == ProjectStatus.Active &&
-                row.Task.Status == TaskState.Open &&
+                (row.Task.Status == TaskState.Open || row.Task.Status == TaskState.InProgress) &&
                 (row.Task.Visibility == TaskVisibility.Public ||
                  row.Task.Visibility == TaskVisibility.Matched));
         }

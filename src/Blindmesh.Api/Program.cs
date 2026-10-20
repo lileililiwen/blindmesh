@@ -79,6 +79,7 @@ app.MapProjectEndpoints();
 app.MapCapabilityEndpoints();
 app.MapCreditEndpoints();
 app.MapTaskEndpoints();
+app.MapParticipationEndpoints();
 app.MapLocalGitHubFixtureEndpoints();
 app.MapOpenApi("/v1/openapi/{documentName}.json");
 

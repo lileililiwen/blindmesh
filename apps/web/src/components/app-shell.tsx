@@ -50,11 +50,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               id="primary-navigation"
               aria-label="Primary"
               className={cn(
-                "w-full flex-col gap-3 md:flex md:w-auto md:flex-row md:items-center md:gap-4",
+                "w-full flex-col gap-3 md:flex md:w-auto md:flex-row md:flex-wrap md:items-center md:gap-4",
                 menuOpen ? "flex" : "hidden",
               )}
             >
-              <ul className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+              <ul className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:gap-4">
                 <li>
                   <Link
                     href="/"
@@ -93,6 +93,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         className="text-small underline underline-offset-4"
                       >
                         Capabilities
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/work"
+                        aria-current={pathname.startsWith("/work") ? "page" : undefined}
+                        className="text-small underline underline-offset-4"
+                      >
+                        Your work
                       </Link>
                     </li>
                     <li>

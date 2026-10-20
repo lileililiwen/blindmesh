@@ -64,6 +64,14 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
 
     public DbSet<Blindmesh.Domain.Tasks.TaskStatusChange> TaskStatusChanges => Set<Blindmesh.Domain.Tasks.TaskStatusChange>();
 
+    public DbSet<Blindmesh.Domain.Tasks.Participation> Participations => Set<Blindmesh.Domain.Tasks.Participation>();
+
+    public DbSet<Blindmesh.Domain.Tasks.TaskApplication> TaskApplications => Set<Blindmesh.Domain.Tasks.TaskApplication>();
+
+    public DbSet<Blindmesh.Domain.Tasks.SlotLease> SlotLeases => Set<Blindmesh.Domain.Tasks.SlotLease>();
+
+    public DbSet<Blindmesh.Domain.Tasks.ParticipationStatusChange> ParticipationStatusChanges => Set<Blindmesh.Domain.Tasks.ParticipationStatusChange>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OutboxMessageEntity>(entity =>
@@ -113,5 +121,6 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // The tables of the tasks module. They are owned by the tasks package
         // and are not changed by any other module.
         modelBuilder.ApplyTaskModel();
+        modelBuilder.ApplyParticipationModel();
     }
 }

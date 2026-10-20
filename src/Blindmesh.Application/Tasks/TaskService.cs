@@ -483,7 +483,7 @@ public sealed class TaskService(
                 Message: "Only the owner of the task and the owner of the project may cancel it.");
         }
 
-        if (task.Status != TaskState.Open)
+        if (task.Status is not (TaskState.Open or TaskState.InProgress))
         {
             return new TaskCommandResult(
                 TaskCommandStatus.InvalidTransition,
@@ -533,7 +533,7 @@ public sealed class TaskService(
             {
                 Id = Guid.NewGuid(),
                 TaskId = task.Id,
-                FromStatus = StatusText(TaskState.Open),
+                FromStatus = StatusText(task.Status),
                 ToStatus = StatusText(TaskState.Cancelled),
                 ChangedBy = actor.UserId.Value,
                 ChangedAt = now,
@@ -774,6 +774,7 @@ public sealed class TaskService(
     public static string StatusText(TaskState status) => status switch
     {
         TaskState.Open => "open",
+        TaskState.InProgress => "in_progress",
         TaskState.Cancelled => "cancelled",
         _ => "draft",
     };
@@ -797,6 +798,7 @@ public sealed class TaskService(
     /// <summary>The wire name of the state of a slot of a task.</summary>
     public static string SlotStateText(TaskSlotState state) => state switch
     {
+        TaskSlotState.Leased => "leased",
         TaskSlotState.Active => "active",
         TaskSlotState.Submitted => "submitted",
         TaskSlotState.Disputed => "disputed",

@@ -60,6 +60,12 @@ internal sealed class IdentityTestHost : IDisposable
 
     public HttpClient Client { get; }
 
+    /// <summary>
+    /// The services of the running API, so a test can call an application
+    /// method of the product the same way the worker does.
+    /// </summary>
+    public IServiceProvider Services => _factory.Services;
+
     public void Dispose()
     {
         Client.Dispose();

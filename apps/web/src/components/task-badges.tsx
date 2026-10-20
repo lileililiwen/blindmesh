@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 export function TaskStateBadge({ status }: { status: string }) {
   const tone = status === "open" ? "success" : status === "cancelled" ? "danger" : "neutral";
 
-  return <Badge tone={tone}>{status}</Badge>;
+  return <Badge tone={tone}>{status === "in_progress" ? "in progress" : status}</Badge>;
 }
 
 /** The visibility of a task, shown as a badge. */

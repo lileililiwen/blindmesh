@@ -19,6 +19,9 @@ public interface ITaskStore
     /// </summary>
     Task<MarketplaceTask?> LockTaskAsync(Guid taskId, CancellationToken cancellationToken);
 
+    /// <summary>Locks one slot of a task for the transaction of the caller.</summary>
+    Task<TaskSlot?> LockSlotAsync(Guid slotId, CancellationToken cancellationToken);
+
     Task<IReadOnlyDictionary<Guid, IReadOnlyList<TaskRequirement>>> ListRequirementsAsync(
         IReadOnlyCollection<Guid> taskIds,
         CancellationToken cancellationToken);

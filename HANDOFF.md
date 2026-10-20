@@ -1,14 +1,14 @@
-current_spec: credit-ledger
+current_spec: task-publication
 
 # Blindmesh handoff
 
-Date: 2026-10-20. Scope: the runtime foundation, the identity package, the project package and the capability package are implemented, verified and archived. The next change is selected but not started.
+Date: 2026-10-20. Scope: the runtime foundation, the identity package, the project package, the capability package and the credit package are implemented, verified and archived. The next change is selected but not started.
 
 ## Current state and next action
 
-Four packages are implemented and archived: the runtime foundation as `openspec/changes/archive/2026-10-19-runtime-foundation`, the identity package as `openspec/changes/archive/2026-10-20-identity-profiles`, the project package as `openspec/changes/archive/2026-10-20-project-workspaces` and the capability package as `openspec/changes/archive/2026-10-20-capability-directory`. Their generated canonical specs are `openspec/specs/runtime-foundation/spec.md`, `openspec/specs/identity-profiles/spec.md`, `openspec/specs/project-workspaces/spec.md` and `openspec/specs/capability-directory/spec.md`. The product now runs: a C# API, a worker, a PostgreSQL 17 schema, a generated TypeScript client and a Next.js 16 web application with a GitHub sign in, a public contributor profile, the project workspaces with their visibility and membership, the capability directory and the deterministic eligibility evaluation.
+Five packages are implemented and archived: the runtime foundation as `openspec/changes/archive/2026-10-19-runtime-foundation`, the identity package as `openspec/changes/archive/2026-10-20-identity-profiles`, the project package as `openspec/changes/archive/2026-10-20-project-workspaces`, the capability package as `openspec/changes/archive/2026-10-20-capability-directory` and the credit package as `openspec/changes/archive/2026-10-20-credit-ledger`. Their generated canonical specs are `openspec/specs/runtime-foundation/spec.md`, `openspec/specs/identity-profiles/spec.md`, `openspec/specs/project-workspaces/spec.md`, `openspec/specs/capability-directory/spec.md` and `openspec/specs/credit-ledger/spec.md`. The product now runs: a C# API, a worker, a PostgreSQL 17 schema, a generated TypeScript client and a Next.js 16 web application with a GitHub sign in, a public contributor profile, the project workspaces with their visibility and membership, the capability directory with its eligibility evaluation and the wallet with the conserved credit balances and the limited grant.
 
-Eight packages remain proposed. `credit-ledger` is the only dependency-eligible change, because its only prerequisite is archived. `openspec/package-map.md` and `openspec/change-map.json` agree.
+Seven packages remain proposed. `task-publication` is the only dependency-eligible change, because its three prerequisites are archived. `openspec/package-map.md` and `openspec/change-map.json` agree.
 
 The sole first-line current_spec is the machine-readable selected active package. Advance it after verified implementation and archive; remove it when the active queue becomes empty.
 
@@ -19,7 +19,7 @@ MIT license is preserved. Source PRD SHA256 remains 718d1f7bb8884c803fb7aa6b8b8f
 - `dotnet restore Blindmesh.sln --locked-mode`: PASS. Six projects restore from the committed `packages.lock.json` files. Every restore also prints `warning NU1900` for the public platform feed, because that feed is unreachable. The warning is the visible evidence of the blocked platform adoption.
 - `dotnet format Blindmesh.sln --verify-no-changes`: PASS. No file needs formatting.
 - `dotnet build Blindmesh.sln -c Release --no-restore`: PASS. Five product projects and one test project, no compiler warning.
-- `dotnet test Blindmesh.sln -c Release --no-build`: PASS. 59 tests, 0 failed, against an isolated PostgreSQL 17 container started by Testcontainers. The 12 tests of the capability package run alone with the filter `FullyQualifiedName~CAP`.
+- `dotnet test Blindmesh.sln -c Release --no-build`: PASS. 73 tests, 0 failed, against an isolated PostgreSQL 17 container started by Testcontainers. The 14 tests of the credit package run alone with the filter `FullyQualifiedName~CRED`.
 - `npm --prefix apps/web ci`: PASS. The lock file is committed and unchanged.
 - `npm --prefix apps/web run lint`, `run typecheck`, `run build`: PASS. No warning, no error, Next.js 16.4.2.
 - `npm --prefix apps/web run api:check`: PASS. The committed `packages/api-client/openapi.json` and `src/generated/schema.ts` match a fresh generation, byte for byte.
@@ -28,8 +28,9 @@ MIT license is preserved. Source PRD SHA256 remains 718d1f7bb8884c803fb7aa6b8b8f
 - `npm --prefix apps/web run test:e2e -- --project=chromium --grep IDENT`: PASS. 12 journeys. The sign in needs the local OAuth fixture, so the API runs with `APP_ENV=test` and the web application points at it. The exact commands are in `openspec/changes/archive/2026-10-20-identity-profiles/verification.md` and in the README.
 - `npm --prefix apps/web run test:e2e -- --project=chromium --grep PROJ`: PASS. 13 journeys. The project journeys need the same local fixture; the exact commands are in `openspec/changes/archive/2026-10-20-project-workspaces/verification.md`.
 - `npm --prefix apps/web run test:e2e -- --project=chromium --grep CAP`: PASS. 12 journeys. The capability journeys need the same local fixture; the exact commands are in `openspec/changes/archive/2026-10-20-capability-directory/verification.md`.
-- `npm --prefix apps/web run test:a11y -- --grep FOUND`, `--grep IDENT`, `--grep PROJ` and `--grep CAP`: PASS. 4, 6, 6 and 5 axe runs, no violation.
-- `python3 scripts/verify_bootstrap.py`: PASS. 12 changes, 37 requirements, 111 scenarios, 72 unchecked tasks; the shared token SHA256 and the 12 contrast pairs are verified.
+- `npm --prefix apps/web run test:e2e -- --project=chromium --grep CRED`: PASS. 8 journeys of the wallet and the wallet history. The exact commands are in `openspec/changes/archive/2026-10-20-credit-ledger/verification.md`.
+- `npm --prefix apps/web run test:a11y -- --grep FOUND`, `--grep IDENT`, `--grep PROJ`, `--grep CAP` and `--grep CRED`: PASS. 4, 6, 6, 5 and 5 axe runs, no violation.
+- `python3 scripts/verify_bootstrap.py`: PASS. 12 changes, 37 requirements, 111 scenarios, 63 unchecked tasks; the shared token SHA256 and the 12 contrast pairs are verified.
 - `node scripts/check-openspec-change-names.mjs`: PASS.
 - `openspec validate --all --strict --no-interactive`: 12 passed, 0 failed.
 - `python3 ../forge/modules/workspace-governance/scripts/ui_conformance.py . --json`: PASS, no finding. The product UI files are in scope. This is not browser accessibility evidence; the axe runs above are.
@@ -50,7 +51,9 @@ The matching scope of a project with the visibility `matched` belongs to a later
 
 The task publication package is not implemented, so no published task with hard conditions exists. The capability package owns the eligibility evaluation anyway and exposes it through `POST /v1/capabilities/eligibility`. The conditions of a task reach the module through the seam `ITaskConditionReader`; the only implementation today reports that no condition is available, so the endpoint of a task answers 404 and the route `/tasks/{id}/eligibility` shows the honest state of a task that does not exist. No part of the task package is implemented.
 
-The remaining marketplace features are not implemented. The pages say so instead of showing a fictional dashboard. Browser flows, responsive behavior and rendered accessibility exist for the runtime, for the identity, for the project workspaces and for the capability directory only.
+The escrow primitives of the credit package — reserve, settle and refund — are internal methods of the credit service. There is no public transfer and no balance editor. The task publication and the evidence packages will call them with the same database context and the same transaction as their own command.
+
+The remaining marketplace features are not implemented. The pages say so instead of showing a fictional dashboard. Browser flows, responsive behavior and rendered accessibility exist for the runtime, for the identity, for the project workspaces, for the capability directory and for the wallet only.
 
 ## Workflow
 

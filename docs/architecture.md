@@ -35,6 +35,22 @@ The runtime foundation owns the endpoints of the shell. They are infrastructure,
 
 The browser uses the same origin path `/api/v1`. The web application forwards it to the API, and Caddy does the same in the compose stack. Unsafe requests without an allowlisted exact `Origin` are rejected with 403 before any side effect. The session bound CSRF token check is added with the session in the identity package.
 
+## Identity endpoints
+
+The identity package owns these endpoints. They are under the same prefixes as the endpoints of the foundation, and the browser reaches them under `/api/v1`.
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /v1/auth/github/start` | Starts the GitHub sign in. It answers the address of the provider and sets the pre-auth cookie. The return path must be an allowlisted relative path. |
+| `GET /v1/auth/github/callback` | Finishes the sign in. It consumes the one-use state, issues the session cookie and returns to the allowlisted relative path. A refused sign in returns to `/sign-in` with a coarse error slug. |
+| `GET /v1/session` | Reads the session of the caller and issues the session and the CSRF token. A visitor without a session receives an anonymous session. |
+| `POST /v1/logout` | Removes the server session of the caller. |
+| `GET /v1/profile` | Reads the private profile of the signed in contributor. |
+| `PATCH /v1/profile` | Saves the profile of the signed in contributor. It requires `expected_version`; a stale version answers 409, a foreign account answers 403 and a field error answers 422. |
+| `GET /v1/people/{username}` | Reads the public profile of a contributor. A missing profile and a private profile answer with the same 404. |
+
+The local OAuth fixture is reachable under `GET /v1/test/github/authorize`. It only answers with `APP_ENV=test`, and a host that asks for the fixture in another environment refuses to start.
+
 ## Local runtime
 
 ```sh
@@ -81,6 +97,8 @@ GitHub OAuth authorization-code flow is API-owned; scopes read:user and user:ema
 
 Session cookie __Host-blindmesh, Secure/HttpOnly/SameSite=Lax/Path=/; 32-byte random opaque token stored as a hash, 7-day idle and 30-day absolute expiry. Local HTTP uses an explicitly dev-only non-__Host cookie. Unsafe methods require exact Origin and X-CSRF-Token bound to the server session; OAuth callback consumes state instead. Session and CSRF are issued by GET /v1/session. Ban/revoke takes effect on the next request; logout removes the server session. Local OAuth fixture is enabled only with APP_ENV=test and must fail startup in production.
 
+The identity package implements this contract as follows. The session token is a 32-byte random value that only leaves the process in the cookie; the database keeps its hash. The CSRF token is derived from the session token with HMAC-SHA256, so it is bound to the server session and can be handed out with `GET /v1/session` without storing a second secret. An unsafe request that carries a session cookie must carry the matching `X-CSRF-Token`; a request without a session cookie is refused by the endpoint that needs a session. The OAuth state and the pre-auth cookie are stored as hashes and are consumed in the same transaction as the session, so a replayed, expired or mismatched state never creates a session. The tables are `users`, `external_identities`, `sessions` and `oauth_states`; the username is stored case folded and unique. A public profile carries the display name, the bio, the time zone, the skill and language tags and the join date, and never the email, the provider identity, the session or the state of the account.
+
 Roles: user, moderator, administrator. Developer/tester/resource-provider are concurrent activities, not exclusive roles. Moderators cannot decide disputes involving their own project/account; administrators use audited reasoned actions, never a raw balance editor. Basic member management ships with project-workspaces; organizations/team billing remain deferred.
 
 ## Credit and participation invariants
@@ -116,6 +134,8 @@ These resolve the PRD's overloaded participation Accepted label: Accepted means 
 Routes are specified in each design. Navigation: public Home/Tasks/Capabilities; authenticated Dashboard/My projects/My work/Wallet/Notifications/Profile; moderator-only Admin. Default English UI with i18n-ready labels and UTC storage plus labeled local timezone rendering; additional locales/RTL are later packages.
 
 Use shared semantic CSS tokens and shadcn/ui primitives. Light/dark theme follows pre-paint data-theme (stored preference or media query); preserve reduced-motion. Minimum 44px pointer targets, 16px body, proper heading order, single main and skip link, associated errors, aria-live status, keyboard focus order/restoration, WCAG 2.2 AA. Measure text >=4.5:1, UI/focus >=3:1 in both themes. No color-only status.
+
+The identity package adds the routes `/sign-in`, `/onboarding`, `/settings/profile` and `/people/{username}`. The navigation of the shell shows the state of the session: a visitor sees the sign in, a contributor sees the link to the public profile, the profile settings and the sign out. A private route without a session offers the sign in with an allowlisted return path.
 
 360px: one column, dialogs fit viewport, tables become labeled lists; 768px: collapsed navigation; 1440px: persistent navigation and restrained readable widths. No page-level horizontal scrolling. Every route defines initial/loading/empty/validation/error/unavailable/permission/success/recovery; preserve draft values after recoverable errors, never announce success before server commit. Destructive operations confirm consequences and restore focus. Server-only private reads use no-store; TanStack keys include actor identity and are cleared on logout; public views omit sensitive fields and query caches.
 

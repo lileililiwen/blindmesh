@@ -61,10 +61,21 @@ services:
       dockerfile: src/Blindmesh.Api/Dockerfile
     environment:
       ASPNETCORE_URLS: http://+:8080
+      # The local stack is the test environment of the product: it runs the
+      # local GitHub fixture with the seeded accounts. A host that asks for
+      # the fixture outside APP_ENV=test refuses to start.
+      APP_ENV: "${BLINDMESH_APP_ENV:-test}"
       Blindmesh__Database__ConnectionString: "Host=postgres;Port=5432;Database=blindmesh;Username=blindmesh;Password=blindmesh"
       Blindmesh__ObjectStorage__Endpoint: "http://object-storage:9000"
       Blindmesh__Mail__Host: "mail"
       Blindmesh__Mail__Port: "1025"
+      Blindmesh__Identity__PublicBaseUrl: "http://127.0.0.1:${BLINDMESH_PROXY_PORT:-8080}"
+      Blindmesh__Identity__BrowserApiPrefix: "/api/v1"
+      # The local stack speaks plain HTTP, so the cookies are the explicitly
+      # named development cookies.
+      Blindmesh__Identity__CookieSecurity: "Development"
+      Blindmesh__Identity__LocalFixtureEnabled: "${BLINDMESH_LOCAL_OAUTH_FIXTURE:-true}"
+      Api__TestAuthenticationEnabled: "true"
       Api__AllowedOrigins__0: "http://localhost:${BLINDMESH_PROXY_PORT:-8080}"
       Api__AllowedOrigins__1: "http://127.0.0.1:${BLINDMESH_PROXY_PORT:-8080}"
     depends_on:

@@ -4,7 +4,7 @@
 
 ## Project facts
 
-- Current state: the runtime foundation is implemented, built and tested; the marketplace packages are specified only.
+- Current state: the runtime foundation and the identity package are implemented, built and tested; the remaining marketplace packages are specified only.
 - Backend: C# 14, .NET SDK 10.0.400, ASP.NET Core 10, EF Core 10/Npgsql, PostgreSQL 17.
 - Frontend: Node.js 24, npm, Next.js 16, React 19, TypeScript 5, Tailwind 4, shadcn/ui style primitives.
 - Verification: `dotnet restore Blindmesh.sln --locked-mode && dotnet format Blindmesh.sln --verify-no-changes && dotnet build Blindmesh.sln -c Release --no-restore && dotnet test Blindmesh.sln -c Release --no-build` and `npm --prefix apps/web ci && npm --prefix apps/web run lint && npm --prefix apps/web run typecheck && npm --prefix apps/web run build && npm --prefix apps/web run api:check`.

@@ -9,7 +9,7 @@ const useExistingServer = Boolean(process.env.BLINDMESH_WEB_URL);
  * same suite runs against a local build and against the compose stack.
  */
 export default defineConfig({
-  testDir: "../../tests/e2e/runtime-foundation",
+  testDir: "../../tests/e2e",
   fullyParallel: false,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),

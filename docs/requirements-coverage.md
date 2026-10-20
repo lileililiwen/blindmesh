@@ -43,6 +43,6 @@ Raw screenshots/logs are supported; video, external issue sync, real-time schedu
 
 ## Implementation boundary
 
-The runtime foundation is implemented, built and tested; its evidence is in `openspec/changes/runtime-foundation/verification.md`. The other eleven packages are specified only: 37 requirements and 111 scenarios in total, 109 unchecked tasks.
+The runtime foundation and the identity package are implemented, built and tested; their evidence is in `openspec/changes/runtime-foundation/verification.md` and `openspec/changes/identity-profiles/verification.md`. The other ten packages are specified only: 37 requirements and 111 scenarios in total, 99 unchecked tasks.
 
-Strict validation and this coverage table cannot establish successful exchanges, pilot safety or deployment. Only the runtime foundation has native, browser and accessibility evidence.
+Strict validation and this coverage table cannot establish successful exchanges, pilot safety or deployment. Only the runtime foundation and the identity package have native, browser and accessibility evidence.

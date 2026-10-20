@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "requirements.md",
-  "selected": "identity-profiles",
+  "selected": "project-workspaces",
   "changes": [
     {
       "id": "runtime-foundation",
@@ -19,8 +19,8 @@
         "runtime-foundation"
       ],
       "requirement_prefix": "IDENT",
-      "status": "proposed",
-      "readiness": "next-in-order",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-20",
       "module": "src/Blindmesh.Domain/Identity, src/Blindmesh.Application/Identity, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {
@@ -31,7 +31,7 @@
       ],
       "requirement_prefix": "PROJ",
       "status": "proposed",
-      "readiness": "implementation-ready-after-prerequisites",
+      "readiness": "next-in-order",
       "module": "src/Blindmesh.Domain/Projects, src/Blindmesh.Application/Projects, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {

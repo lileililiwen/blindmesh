@@ -1,3 +1,5 @@
+using Blindmesh.Domain.Identity;
+using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +14,14 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
     public DbSet<OutboxMessageEntity> OutboxMessages => Set<OutboxMessageEntity>();
 
     public DbSet<IdempotencyRecordEntity> IdempotencyRecords => Set<IdempotencyRecordEntity>();
+
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
+
+    public DbSet<UserSession> Sessions => Set<UserSession>();
+
+    public DbSet<OAuthState> OAuthStates => Set<OAuthState>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,5 +58,9 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
                 .IsUnique()
                 .HasDatabaseName("ux_idempotency_records_scope_key");
         });
+
+        // The tables of the identity module. They are owned by the identity
+        // package and are not changed by any other module.
+        modelBuilder.ApplyIdentityModel();
     }
 }

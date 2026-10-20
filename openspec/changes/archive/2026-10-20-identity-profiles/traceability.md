@@ -1,0 +1,23 @@
+# Requirement traceability
+
+Outcome: Sign in safely and manage a public contributor profile. Every row is proved by a named test; the scenario names are normative and the tests use their requirement prefix. No scenario is waived by API-only evidence: every scenario has a browser journey as well as a server test.
+
+| Requirement | Outcome / UX | Design decision and implementation boundary | Scenarios | Tasks | Verification oracle |
+|---|---|---|---|---|---|
+| IDENT-1 | Session; /sign-in, /onboarding, /settings/profile, /people/{username} | design.md; src/Blindmesh.Domain/Identity, src/Blindmesh.Application/Identity, src/Blindmesh.Infrastructure/Identity, src/Blindmesh.Api/Endpoints/Identity; apps/web | IDENT-1 success; rejection; boundary | 1.1, 1.2, 2.1, 3.1, 3.2, 4.1, 4.2 | verification.md; IDENT xUnit/integration + browser/axe assertions |
+| IDENT-2 | Profile; /sign-in, /onboarding, /settings/profile, /people/{username} | design.md; src/Blindmesh.Domain/Identity, src/Blindmesh.Application/Identity, src/Blindmesh.Infrastructure/Identity, src/Blindmesh.Api/Endpoints/Identity; apps/web | IDENT-2 success; rejection; boundary | 1.1, 1.2, 2.2, 3.1, 3.2, 4.1, 4.2 | verification.md; IDENT xUnit/integration + browser/axe assertions |
+| IDENT-UX | Accessible journey; /sign-in, /onboarding, /settings/profile, /people/{username} | design.md; src/Blindmesh.Domain/Identity, src/Blindmesh.Application/Identity, src/Blindmesh.Infrastructure/Identity, src/Blindmesh.Api/Endpoints/Identity; apps/web | IDENT-UX complete journey; recover from failure; responsive keyboard operation | 1.1, 1.2, 2.3, 3.1, 3.2, 4.1, 4.2 | verification.md; IDENT xUnit/integration + browser/axe assertions |
+
+## Scenario to test map
+
+| Scenario | Server test | Browser test |
+|---|---|---|
+| IDENT-1 success | `Ident1SessionTests.IDENT1SuccessTheCallbackOpensTheSessionAndStoresNoProviderToken`: the callback opens the session, the row holds the hash of the token and no provider token is stored. `IDENT1TheLogoutRemovesTheServerSession`: the sign out removes the server session. `IDENT1AnUnsafeRequestWithoutTheCsrfTokenOfTheSessionIsRefused`: the CSRF token of the session is required. | `IDENT-UX the sign in journey opens the onboarding of the contributor`, `IDENT-UX the navigation shows the session of the contributor` |
+| IDENT-1 rejection | `IDENT1RejectionAReplayedStateCreatesNoSecondSession`, `IDENT1RejectionAnExpiredStateCreatesNoSession`, `IDENT1RejectionAMismatchedPreAuthCookieCreatesNoSession`: no session is created. | `IDENT-UX the sign out removes the session of the contributor` |
+| IDENT-1 boundary | `IDENT1BoundaryABannedAccountLosesItsAccessOnTheNextRequest`: the next request of a banned account is refused and the answer holds no private field. | `IDENT-UX the settings page refuses a visitor without a session` |
+| IDENT-2 success | `Ident2ProfileTests.IDENT2SuccessTheProfileIsSavedAndThePublicProfileShowsOnlyTheAllowedFields`: the version advances, the row holds the change and the public profile carries no private field. `IDENT2TheUsernameIsUniqueAndCaseFolded`. | `IDENT-UX the saved profile is announced and shown on the public page` |
+| IDENT-2 rejection | `IDENT2RejectionAStaleVersionIsRefusedAndNothingChanges`, `IDENT2RejectionTheProfileOfAnotherAccountIsForbidden`, `IDENT2RejectionAnInvalidFieldIsRefusedWithTheFieldError`: 409, 403 and 422 with the field errors; the stored profile does not change. | `IDENT-UX an invalid field is marked and takes the focus` |
+| IDENT-2 boundary | `IDENT2BoundaryAMissingAndAPrivateProfileAnswerTheSameSafe404`: a missing profile and a private profile answer with the same code and message. | `IDENT-UX a profile that does not exist shows the same safe page` |
+| IDENT-UX complete journey | `IDENT1TheIdentityWritesNoOutboxMessageAndNoIdempotencyRecord`: the seams of the product stay untouched. | `IDENT-UX the sign in journey opens the onboarding of the contributor`, `IDENT-UX the navigation shows the session of the contributor`, `IDENT-UX the saved profile is announced and shown on the public page` |
+| IDENT-UX recover from failure | `IDENT2RejectionAnInvalidFieldIsRefusedWithTheFieldError`: the server answers the field errors. | `IDENT-UX an invalid field is marked and takes the focus`, `IDENT-UX the unavailable state explains the failure and offers a retry`, `IDENT-UX a profile that does not exist shows the same safe page` |
+| IDENT-UX responsive keyboard operation | — | `IDENT-UX the journey has no horizontal overflow at 360, 768 and 1440 pixels`, `IDENT-UX the journey works with the keyboard only`, `IDENT-UX the journey works in the dark theme`, and the axe runs of `tests/e2e/identity-profiles/accessibility.a11y.ts` |

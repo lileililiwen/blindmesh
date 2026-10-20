@@ -4,7 +4,7 @@ Find what you couldn't see. Build alone, test together.
 
 Blindmesh is a mutual testing platform for independent developers. Contributors earn internal Credits for useful testing and spend them on exploration, directed verification, and authorized resource collaboration.
 
-**Status: the runtime foundation runs.** The API, the worker, the PostgreSQL schema, the generated API client and the web application are implemented, built and tested. The marketplace features (identity, projects, tasks, credits, evidence, moderation) are still specified, not implemented. See [HANDOFF](HANDOFF.md) for the actual evidence and the remaining boundaries.
+**Status: the runtime foundation and the identity package run.** The API, the worker, the PostgreSQL schema, the generated API client, the web application, the GitHub sign in and the public contributor profile are implemented, built and tested. The remaining marketplace features (projects, tasks, credits, evidence, moderation) are still specified, not implemented. See [HANDOFF](HANDOFF.md) for the actual evidence and the remaining boundaries.
 
 ## Start here
 
@@ -27,6 +27,24 @@ npm --prefix apps/web ci && npm --prefix apps/web run build && npm --prefix apps
 ```
 
 The home page of the web application shows the real availability of the runtime. `GET /v1/health/live` reports the process, `GET /v1/health/ready` reports the database, the object storage and the mail sink.
+
+## Sign in locally
+
+The sign in of a local environment uses the seeded accounts of the local GitHub fixture, which only runs with `APP_ENV=test` and never in production. A plain HTTP host needs the development cookie mode and its own address in the allowed origins:
+
+```sh
+ASPNETCORE_URLS=http://127.0.0.1:58090 APP_ENV=test \
+  Blindmesh__Identity__LocalFixtureEnabled=true \
+  Blindmesh__Identity__PublicBaseUrl=http://127.0.0.1:53100 \
+  Blindmesh__Identity__CookieSecurity=Development \
+  Api__AllowedOrigins__0=http://127.0.0.1:53100 \
+  Blindmesh__Database__ConnectionString="Host=127.0.0.1;Port=5432;Database=blindmesh;Username=blindmesh;Password=blindmesh" \
+  dotnet run --project src/Blindmesh.Api --no-launch-profile &
+
+BLINDMESH_API_URL=http://127.0.0.1:58090 npm --prefix apps/web run start -- -p 53100
+```
+
+Open `http://127.0.0.1:53100/sign-in?actor=alice` and sign in as alice, bob, cara, dana or erin.
 
 ## Verify
 

@@ -8,7 +8,15 @@ import { NextRequest, NextResponse } from "next/server";
  */
 const apiBaseUrl = () => process.env.BLINDMESH_API_URL ?? "http://127.0.0.1:8080";
 
-const forwardedRequestHeaders = ["accept", "content-type", "idempotency-key", "origin", "x-csrf-token", "x-request-id"];
+const forwardedRequestHeaders = [
+  "accept",
+  "content-type",
+  "cookie",
+  "idempotency-key",
+  "origin",
+  "x-csrf-token",
+  "x-request-id",
+];
 
 type RouteContext = { params: Promise<{ path: string[] }> };
 
@@ -40,12 +48,28 @@ async function proxy(request: NextRequest, context: RouteContext): Promise<Respo
 
   const payload = await response.text();
 
+  const responseHeaders = new Headers({
+    "content-type": response.headers.get("content-type") ?? "application/json",
+    "x-request-id": response.headers.get("x-request-id") ?? "",
+  });
+
+  // The sign in flow is a chain of redirects. The location of the redirect
+  // belongs to the browser, so it is passed through.
+  const location = response.headers.get("location");
+
+  if (location !== null) {
+    responseHeaders.set("location", location);
+  }
+
+  // The session cookie of the API belongs to the browser of the visitor, so
+  // it is passed through in both directions.
+  for (const cookie of response.headers.getSetCookie()) {
+    responseHeaders.append("set-cookie", cookie);
+  }
+
   return new NextResponse(payload, {
     status: response.status,
-    headers: {
-      "content-type": response.headers.get("content-type") ?? "application/json",
-      "x-request-id": response.headers.get("x-request-id") ?? "",
-    },
+    headers: responseHeaders,
   });
 }
 

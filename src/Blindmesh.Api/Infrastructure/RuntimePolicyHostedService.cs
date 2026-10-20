@@ -1,3 +1,4 @@
+using Blindmesh.Application.Identity;
 using Blindmesh.Application.Runtime;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@ namespace Blindmesh.Api.Infrastructure;
 /// </summary>
 public sealed class RuntimePolicyHostedService(
     IOptions<Api.Configuration.ApiOptions> options,
+    IOptions<IdentityOptions> identityOptions,
     IConfiguration configuration,
     IHostEnvironment environment,
     ILogger<RuntimePolicyHostedService> logger) : IHostedService
@@ -22,6 +24,7 @@ public sealed class RuntimePolicyHostedService(
         try
         {
             RuntimePolicy.Validate(appEnvironment, options.Value.TestAuthenticationEnabled);
+            RuntimePolicy.ValidateLocalOAuthFixture(appEnvironment, identityOptions.Value.LocalFixtureEnabled);
         }
         catch (InvalidOperationException exception)
         {

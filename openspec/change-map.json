@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "requirements.md",
-  "selected": "capability-directory",
+  "selected": "credit-ledger",
   "changes": [
     {
       "id": "runtime-foundation",
@@ -41,8 +41,8 @@
         "identity-profiles"
       ],
       "requirement_prefix": "CAP",
-      "status": "proposed",
-      "readiness": "next-in-order",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-20",
       "module": "src/Blindmesh.Domain/Capabilities, src/Blindmesh.Application/Capabilities, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {
@@ -53,7 +53,7 @@
       ],
       "requirement_prefix": "CRED",
       "status": "proposed",
-      "readiness": "implementation-ready-after-prerequisites",
+      "readiness": "next-in-order",
       "module": "src/Blindmesh.Domain/Credits, src/Blindmesh.Application/Credits, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {

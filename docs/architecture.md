@@ -72,6 +72,36 @@ The visibility is enforced on every read, list, detail and membership operation.
 
 The owner and the editors change the content and record the versions. Only the owner manages the members, the visibility, the pause and the archive. A member reads the project and applies for its work, but never manages it. The actor policy is checked again on every command, so a removed member and a changed visibility are honoured by the next read.
 
+## Capability endpoints
+
+The capability package owns these endpoints. They are under the same prefixes as the endpoints of the foundation, and the browser reaches them under `/api/v1`.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/capabilities` | Lists the capabilities the caller may see in the list envelope `{items,next_cursor}`. The limit defaults to 20 and is capped at 100. The query `scope=own` answers the own declarations of the contributor, including the withdrawn ones. |
+| `POST /v1/capabilities` | Declares a capability of the signed in contributor. It accepts an optional `Idempotency-Key`; the same key with the same payload replays the original answer. |
+| `GET /v1/capabilities/{id}` | Reads the committed state of a capability with its tags, its metadata and the history of its lifecycle. |
+| `PATCH /v1/capabilities/{id}` | Saves the content, the visibility or the availability of a capability. It requires `expected_version`; a stale version answers 409 with the current version. |
+| `POST /v1/capabilities/{id}/withdraw` | Withdraws a capability of the signed in contributor. It requires `expected_version`; a withdrawn capability answers 409. |
+| `POST /v1/capabilities/eligibility` | Evaluates a set of hard conditions against the declarations of the signed in contributor. It answers the decision and the reason of every condition. |
+| `GET /v1/capabilities/tasks/{task_id}/eligibility` | Evaluates the hard conditions of a published task against the declarations of the signed in contributor. |
+
+The fields of a capability are the kind (`account`, `device`, `skill`, `region`, `network` or `role`), the label (1 to 100 characters), at most 20 tags, the visibility (`public` or `private`), the availability and the metadata. The metadata is a map of non sensitive identifiers; the allowlist of its keys is `os`, `os_version`, `browser`, `browser_version`, `device`, `device_model`, `region` and `provider`, and a value holds letters, digits, dots, dashes and underscores. A key outside the allowlist is refused, so a credential never reaches the database. A body that holds a field outside the allowed ones is refused as well, before anything is stored and without an echo of the refused field or of its value.
+
+The visibility is enforced on every read, list, detail and command. A public capability is readable by everybody, also without a session. A private capability is readable by its owner only; a capability of another contributor answers 404 without its label, its tags and its metadata. Only the owner of a capability changes it, and a capability that is visible but foreign answers 403. A withdrawn capability keeps its row, its tags and its history, but it never matches a condition again.
+
+The verification of a capability is `self_declared` until a moderator accepts the evidence of a verification. The moderation package is a later package, so this package never moves a capability to `verified` and the request bodies of the module do not accept a verification field at all.
+
+### The eligibility evaluation and the task that does not exist yet
+
+The task publication package is not implemented, so the marketplace holds no published task with hard conditions. The capabilities package owns the evaluation anyway, because the evaluation is the matching of a declaration against a condition and not a property of a task.
+
+The evaluation is deterministic. It takes a set of hard conditions of the kinds `region`, `device` and `role` and compares every value with the label and the tags of the public, available and not withdrawn declarations of the contributor. The values are compared trimmed, with the inner spaces collapsed and case folded, so the spelling of the contributor does not change the result. The answer holds the decision and the reason of every condition, and the reason of a condition that is not met never names a private declaration, so a private capability of the contributor stays private even in a refusal. The account restriction of the evaluation is the ban: a banned session is refused with 401 before the evaluation runs, so a restricted account is never eligible. The evaluation never trusts the data of the client; it is computed from the committed state at the time of the request, so a declaration that changed after a preview changes the next answer.
+
+The conditions of a task reach the module through a seam, `ITaskConditionReader`. The only implementation of this package, `NoPublishedTaskConditionReader`, reports that no condition is available, because no task is published. The task publication package registers its own reader and the endpoint `GET /v1/capabilities/tasks/{task_id}/eligibility` then answers the evaluation of the conditions of that task. Until then the endpoint answers 404, and it never invents a task, a condition or a decision.
+
+The route `/tasks/{id}/eligibility` of the web application follows the same safe page that the project package uses for a project that may not be seen: a task that is not published shows the honest state and no eligibility. The route stays usable, because the page also offers the same evaluation for a condition that the contributor names, so the decision and its reason can be read and checked without a published task.
+
 ## Local runtime
 
 ```sh
@@ -152,6 +182,8 @@ These resolve the PRD's overloaded participation Accepted label: Accepted means 
 
 The project package implements the project row of the table as follows. The tables are `projects`, `project_members`, `project_versions` and `project_status_history`. A project starts as a draft and is activated by the owner or an editor, paused and archived by the owner only; an archived project is final, keeps its versions and its history and accepts no new work. Every applied transition is written to the status history in the same transaction as the project. The version of a project is the optimistic concurrency version of its content, its visibility and its state; a change of the membership is not part of it. The membership of a project is a set of members with the role viewer or editor; the owner is not a member row.
 
+The capability package implements the capability row of the table as follows. The tables are `capabilities`, `capability_tags` and `capability_status_history`. A capability is declared and withdrawn by its owner; the state machine of a capability is its own and never shares a state with a task, a participation, a submission, a finding or a dispute. A withdrawn capability keeps its row, its tags and its history, and it is not deleted. Every applied transition is written to the status history in the same transaction as the capability. The version of a capability is the optimistic concurrency version of its content, its visibility and its availability. The tags of a capability are stored case folded and are unique per capability; the metadata of a capability is a JSON object on the row, and only the allowlist of the domain reaches it.
+
 ## UI contract for every change
 
 Routes are specified in each design. Navigation: public Home/Tasks/Capabilities; authenticated Dashboard/My projects/My work/Wallet/Notifications/Profile; moderator-only Admin. Default English UI with i18n-ready labels and UTC storage plus labeled local timezone rendering; additional locales/RTL are later packages.
@@ -161,6 +193,8 @@ Use shared semantic CSS tokens and shadcn/ui primitives. Light/dark theme follow
 The identity package adds the routes `/sign-in`, `/onboarding`, `/settings/profile` and `/people/{username}`. The navigation of the shell shows the state of the session: a visitor sees the sign in, a contributor sees the link to the public profile, the profile settings and the sign out. A private route without a session offers the sign in with an allowlisted return path.
 
 The project package adds the routes `/projects`, `/projects/new`, `/projects/{id}` and `/projects/{id}/settings`. The list shows the projects the visitor may see and explains the next action when it is empty. The create form and the settings page keep the draft of the contributor after a refusal, mark the field of a validation error and give it the focus, and announce a success only after the server committed it. The settings page shows the content, the visibility, the lifecycle, the team and the versions of a project, and it explains the restriction to a member without the right to change it. The archive and the removal of a member confirm their consequences. A project that may not be seen shows the same safe page as a project that does not exist.
+
+The capability package adds the routes `/capabilities`, `/settings/capabilities` and `/tasks/{id}/eligibility`. The directory shows the capabilities the visitor may see, marks the ones that a match uses and explains the next action when it is empty. The settings page declares, edits and withdraws the own declarations, keeps the draft of the contributor after a refusal, marks the field of a validation error and gives it the focus, shows the history of a withdrawn declaration and confirms the consequences of a withdrawal. The eligibility route shows the honest state of a task that is not published and offers the same evaluation for a condition that the contributor names, so the decision and its reason stay readable. A private capability of another contributor is in no answer.
 
 360px: one column, dialogs fit viewport, tables become labeled lists; 768px: collapsed navigation; 1440px: persistent navigation and restrained readable widths. No page-level horizontal scrolling. Every route defines initial/loading/empty/validation/error/unavailable/permission/success/recovery; preserve draft values after recoverable errors, never announce success before server commit. Destructive operations confirm consequences and restore focus. Server-only private reads use no-store; TanStack keys include actor identity and are cleared on logout; public views omit sensitive fields and query caches.
 

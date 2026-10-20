@@ -1,5 +1,7 @@
+using Blindmesh.Domain.Capabilities;
 using Blindmesh.Domain.Identity;
 using Blindmesh.Domain.Projects;
+using Blindmesh.Infrastructure.Capabilities;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Blindmesh.Infrastructure.Projects;
@@ -32,6 +34,12 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
     public DbSet<ProjectVersion> ProjectVersions => Set<ProjectVersion>();
 
     public DbSet<ProjectStatusChange> ProjectStatusChanges => Set<ProjectStatusChange>();
+
+    public DbSet<Capability> Capabilities => Set<Capability>();
+
+    public DbSet<CapabilityTag> CapabilityTags => Set<CapabilityTag>();
+
+    public DbSet<CapabilityStatusChange> CapabilityStatusChanges => Set<CapabilityStatusChange>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,5 +81,6 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // package and are not changed by any other module.
         modelBuilder.ApplyIdentityModel();
         modelBuilder.ApplyProjectModel();
+        modelBuilder.ApplyCapabilityModel();
     }
 }

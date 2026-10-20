@@ -4,7 +4,7 @@ Find what you couldn't see. Build alone, test together.
 
 Blindmesh is a mutual testing platform for independent developers. Contributors earn internal Credits for useful testing and spend them on exploration, directed verification, and authorized resource collaboration.
 
-**Status: the runtime foundation, the identity package and the project package run.** The API, the worker, the PostgreSQL schema, the generated API client, the web application, the GitHub sign in, the public contributor profile and the project workspaces with their visibility and membership are implemented, built and tested. The remaining marketplace features (capabilities, tasks, credits, evidence, moderation) are still specified, not implemented. See [HANDOFF](HANDOFF.md) for the actual evidence and the remaining boundaries.
+**Status: the runtime foundation, the identity package, the project package and the capability package run.** The API, the worker, the PostgreSQL schema, the generated API client, the web application, the GitHub sign in, the public contributor profile, the project workspaces with their visibility and membership, the capability directory and the eligibility evaluation are implemented, built and tested. The remaining marketplace features (tasks, credits, evidence, moderation) are still specified, not implemented. See [HANDOFF](HANDOFF.md) for the actual evidence and the remaining boundaries.
 
 ## Start here
 

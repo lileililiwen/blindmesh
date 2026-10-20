@@ -78,6 +78,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </li>
                     <li>
                       <Link
+                        href="/capabilities"
+                        aria-current={pathname === "/capabilities" ? "page" : undefined}
+                        className="text-small underline underline-offset-4"
+                      >
+                        Capabilities
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/settings/capabilities"
+                        aria-current={pathname === "/settings/capabilities" ? "page" : undefined}
+                        className="text-small underline underline-offset-4"
+                      >
+                        Your capabilities
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
                         href={`/people/${user.username}`}
                         aria-current={pathname === `/people/${user.username}` ? "page" : undefined}
                         className="text-small underline underline-offset-4"

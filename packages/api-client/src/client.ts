@@ -33,6 +33,37 @@ export type ProjectVersionResponse = ProjectDetailResponse["versions"][number];
 
 export type ProjectStatusChangeResponse = ProjectDetailResponse["status_history"][number];
 
+export type CapabilityListResponse = paths["/v1/capabilities"]["get"]["responses"][200]["content"]["application/json"];
+
+export type CapabilityViewResponse = CapabilityListResponse["items"][number];
+
+export type CapabilityStatusChangeResponse = CapabilityViewResponse["status_history"][number];
+
+export type CapabilityEligibilityResponse =
+  paths["/v1/capabilities/eligibility"]["post"]["responses"][200]["content"]["application/json"];
+
+export type CapabilityConditionOutcomeResponse = CapabilityEligibilityResponse["conditions"][number];
+
+/** The body of a create command of a capability. */
+export type CreateCapabilityBody = Partial<
+  paths["/v1/capabilities"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of a change of a capability. A field that is left out keeps its value. */
+export type UpdateCapabilityBody = Partial<
+  paths["/v1/capabilities/{id}"]["patch"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of a withdraw command of a capability. */
+export type WithdrawCapabilityBody = Partial<
+  paths["/v1/capabilities/{id}/withdraw"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of an eligibility evaluation with a set of hard conditions. */
+export type EvaluateEligibilityBody = Partial<
+  paths["/v1/capabilities/eligibility"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
 /** The body of a create command of a project. */
 export type CreateProjectBody = Partial<
   paths["/v1/projects"]["post"]["requestBody"]["content"]["application/json"]
@@ -139,6 +170,35 @@ export type BlindmeshClient = {
     body: AddProjectVersionBody,
     csrfToken: string,
   ): Promise<ClientResult<ProjectDetailResponse>>;
+  /** Lists the capabilities the caller may see. */
+  listCapabilities(limit?: number, cursor?: string, scope?: string): Promise<ClientResult<CapabilityListResponse>>;
+  /** Reads the committed state of a capability. */
+  getCapability(id: string): Promise<ClientResult<CapabilityViewResponse>>;
+  /** Declares a capability of the signed in contributor. */
+  createCapability(
+    body: CreateCapabilityBody,
+    csrfToken: string,
+    idempotencyKey?: string,
+  ): Promise<ClientResult<CapabilityViewResponse>>;
+  /** Saves the content or the visibility of a capability. */
+  updateCapability(
+    id: string,
+    body: UpdateCapabilityBody,
+    csrfToken: string,
+  ): Promise<ClientResult<CapabilityViewResponse>>;
+  /** Withdraws a capability of the signed in contributor. */
+  withdrawCapability(
+    id: string,
+    body: WithdrawCapabilityBody,
+    csrfToken: string,
+  ): Promise<ClientResult<CapabilityViewResponse>>;
+  /** Evaluates a set of hard conditions against the declarations of the caller. */
+  evaluateEligibility(
+    body: EvaluateEligibilityBody,
+    csrfToken: string,
+  ): Promise<ClientResult<CapabilityEligibilityResponse>>;
+  /** Evaluates the hard conditions of a published task against the declarations of the caller. */
+  evaluateTaskEligibility(taskId: string, csrfToken: string): Promise<ClientResult<CapabilityEligibilityResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -313,6 +373,64 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
         method: "POST",
         headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
         body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    listCapabilities: (limit, cursor, scope) => {
+      const query = new URLSearchParams();
+
+      if (limit !== undefined) {
+        query.set("limit", String(limit));
+      }
+
+      if (cursor) {
+        query.set("cursor", cursor);
+      }
+
+      if (scope) {
+        query.set("scope", scope);
+      }
+
+      const suffix = query.toString();
+
+      return request<CapabilityListResponse>(`/capabilities${suffix ? `?${suffix}` : ""}`, { cache: "no-store" });
+    },
+    getCapability: (id) => request<CapabilityViewResponse>(`/capabilities/${encodeURIComponent(id)}`, { cache: "no-store" }),
+    createCapability: (body, csrfToken, idempotencyKey) =>
+      request<CapabilityViewResponse>("/capabilities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    updateCapability: (id, body, csrfToken) =>
+      request<CapabilityViewResponse>(`/capabilities/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    withdrawCapability: (id, body, csrfToken) =>
+      request<CapabilityViewResponse>(`/capabilities/${encodeURIComponent(id)}/withdraw`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    evaluateEligibility: (body, csrfToken) =>
+      request<CapabilityEligibilityResponse>("/capabilities/eligibility", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    evaluateTaskEligibility: (taskId, csrfToken) =>
+      request<CapabilityEligibilityResponse>(`/capabilities/tasks/${encodeURIComponent(taskId)}/eligibility`, {
+        method: "GET",
+        headers: { ...withCsrf(csrfToken) },
         cache: "no-store",
       }),
   };

@@ -96,6 +96,34 @@ public sealed class ProjectService(IProjectStore store, IClock clock)
     }
 
     /// <summary>
+    /// The access of the actor to a project. Null means that the project may
+    /// not be seen by the actor at all, so a child object of the project must
+    /// not be found either. The method is the seam of the project module for
+    /// the modules that keep the visibility of a child object, such as the
+    /// tasks module.
+    /// </summary>
+    public async Task<ProjectAccessView?> GetAccessAsync(
+        ProjectActor actor,
+        Guid projectId,
+        CancellationToken cancellationToken)
+    {
+        var access = await LoadAsync(actor, projectId, cancellationToken);
+
+        if (access is null)
+        {
+            return null;
+        }
+
+        return new ProjectAccessView(
+            access.Level == AccessLevel.Owner,
+            access.IsInsider,
+            access.Level is AccessLevel.Owner or AccessLevel.Editor,
+            access.Project.Status == ProjectStatus.Active,
+            VisibilityText(access.Project.Visibility),
+            StatusText(access.Project.Status));
+    }
+
+    /// <summary>
     /// Creates a project in the draft state. The owner of a new project is the
     /// actor; the owner is the only member manager of the project.
     /// </summary>

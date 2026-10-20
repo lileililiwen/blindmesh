@@ -11,6 +11,20 @@ public sealed record ProjectActor(Guid? UserId, string Username)
     public bool IsAuthenticated => UserId.HasValue;
 }
 
+/// <summary>
+/// The access of an actor to a project. It is the answer of the project module
+/// to another module of the product that keeps the visibility of a child
+/// object, such as a task. It repeats no rule of the project module: it only
+/// says what the actor may do with the project.
+/// </summary>
+public sealed record ProjectAccessView(
+    bool IsOwner,
+    bool IsInsider,
+    bool CanEdit,
+    bool IsActive,
+    string Visibility,
+    string Status);
+
 /// <summary>One project of the list of visible projects.</summary>
 public sealed record ProjectSummaryView(
     Guid Id,

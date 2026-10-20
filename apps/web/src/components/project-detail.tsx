@@ -158,6 +158,10 @@ export function ProjectDetail({ id }: { id: string }) {
             <Link href={`/projects/${project.id}/settings`}>Manage the project</Link>
           </Button>
         ) : null}
+
+        <Button asChild variant="secondary">
+          <Link href={`/projects/${project.id}/tasks`}>The tasks of the project</Link>
+        </Button>
       </div>
 
       {project.summary ? (

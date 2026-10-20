@@ -30,6 +30,10 @@ test("CRED-UX the contributor claims the grant and sees the credits with their e
   const grant = page.getByRole("region", { name: "The grant of new contributors" });
   const claim = grant.getByRole("button", { name: /Claim \d+ credits/ });
 
+  // The panel of the grant only exists when the wallet has loaded, so the
+  // journey waits for it before it decides whether the grant is still open.
+  await expect(grant).toBeVisible();
+
   if ((await claim.count()) > 0) {
     // The claim waits for the acceptance of the rules.
     await expect(claim).toBeDisabled();
@@ -110,12 +114,17 @@ test("CRED-UX the history of a wallet without a transaction explains the next ac
   await expect(page.getByRole("heading", { name: "Wallet history", level: 1 })).toBeVisible();
 
   const empty = page.getByRole("heading", { name: "No transaction yet" });
+  const granted = page.getByRole("heading", { name: "Grant" });
+
+  // The list of the transactions arrives after the page, so the journey waits
+  // for one of the two states before it reads which one it is.
+  await expect(empty.or(granted)).toBeVisible();
 
   if ((await empty.count()) > 0) {
     await expect(page.getByText("Your wallet has no movement yet.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Open the wallet" })).toBeVisible();
   } else {
-    await expect(page.getByRole("heading", { name: "Grant" })).toBeVisible();
+    await expect(granted).toBeVisible();
   }
 });
 
@@ -146,6 +155,9 @@ test("CRED-UX the journey works with the keyboard only", async ({ page }) => {
 
   const grant = page.getByRole("region", { name: "The grant of new contributors" });
   const claim = grant.getByRole("button", { name: /Claim \d+ credits/ });
+
+  // The panel of the grant only exists when the wallet has loaded.
+  await expect(grant).toBeVisible();
 
   if ((await claim.count()) > 0) {
     const checkbox = page.getByLabel(/I accept the rules/);

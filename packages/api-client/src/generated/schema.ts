@@ -379,6 +379,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the tasks of the marketplace that the caller may see. */
+        get: operations["ListTasks"];
+        put?: never;
+        /** Write a task in the draft state. */
+        post: operations["CreateTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tasks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the committed state of a task. */
+        get: operations["GetTask"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the editable content of a task. */
+        patch: operations["UpdateTask"];
+        trace?: never;
+    };
+    "/v1/tasks/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish a task and reserve its maximum budget. */
+        post: operations["PublishTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tasks/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close the admission of a task and refund its unused slots. */
+        post: operations["CancelTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -555,6 +625,10 @@ export interface components {
             items: components["schemas"]["ProjectSummaryView"][];
             next_cursor?: null | string;
         };
+        PagedResultOfTaskSummaryView: {
+            items: components["schemas"]["TaskSummaryView"][];
+            next_cursor?: null | string;
+        };
         ProfileView: {
             /** Format: uuid */
             id: string;
@@ -686,6 +760,142 @@ export interface components {
             authorize_url: string;
             /** Format: int32 */
             expires_in_seconds: number | string;
+        };
+        TaskBody: {
+            /** Format: uuid */
+            project_id: null | string;
+            title: null | string;
+            scope: null | string;
+            modes: null | string[];
+            visibility: null | string;
+            /** Format: int32 */
+            expected_minutes: null | number | string;
+            /** Format: int64 */
+            base_reward: null | number | string;
+            /** Format: int64 */
+            slot_bonus: null | number | string;
+            /** Format: int32 */
+            slot_count: null | number | string;
+            /** Format: date-time */
+            deadline: null | string;
+            accepts_clean_findings: null | boolean;
+            access_kind: null | string;
+            access_resource: null | string;
+            review_criteria: null | string;
+            requirements: null | components["schemas"]["TaskRequirementBody"][];
+            steps: null | components["schemas"]["TaskStepBody"][];
+            /** Format: int32 */
+            expected_version: null | number | string;
+        };
+        TaskDetailView: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            scope: string;
+            modes: string[];
+            visibility: string;
+            status: string;
+            /** Format: int32 */
+            expected_minutes: number | string;
+            /** Format: int64 */
+            base_reward: number | string;
+            /** Format: int64 */
+            slot_bonus: number | string;
+            /** Format: int32 */
+            slot_count: number | string;
+            /** Format: int64 */
+            maximum_budget: number | string;
+            /** Format: int64 */
+            reserved_budget: number | string;
+            /** Format: date-time */
+            deadline: null | string;
+            accepts_clean_findings: boolean;
+            access_kind: null | string;
+            access_resource: null | string;
+            review_criteria: null | string;
+            /** Format: uuid */
+            project_id: string;
+            project_name: string;
+            owner_username: string;
+            /** Format: int32 */
+            version: number | string;
+            summary_only: boolean;
+            can_manage: boolean;
+            requirements: components["schemas"]["TaskRequirementView"][];
+            steps: components["schemas"]["TaskStepView"][];
+            slots: components["schemas"]["TaskSlotView"][];
+            status_history: components["schemas"]["TaskStatusChangeView"][];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: date-time */
+            published_at: null | string;
+            /** Format: date-time */
+            cancelled_at: null | string;
+        };
+        TaskRequirementBody: {
+            kind: null | string;
+            value: null | string;
+        };
+        TaskRequirementView: {
+            kind: string;
+            value: string;
+        };
+        TaskSlotView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            position: number | string;
+            /** Format: int64 */
+            reward: number | string;
+            state: string;
+            /** Format: date-time */
+            started_at: null | string;
+        };
+        TaskStatusChangeView: {
+            from_status: string;
+            to_status: string;
+            changed_by: string;
+            /** Format: date-time */
+            changed_at: string;
+        };
+        TaskStepBody: {
+            title: null | string;
+            expected_result: null | string;
+        };
+        TaskStepView: {
+            /** Format: int32 */
+            position: number | string;
+            title: string;
+            expected_result: string;
+        };
+        TaskSummaryView: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            modes: string[];
+            visibility: string;
+            status: string;
+            /** Format: int32 */
+            expected_minutes: number | string;
+            /** Format: int64 */
+            base_reward: number | string;
+            /** Format: int64 */
+            slot_bonus: number | string;
+            /** Format: int32 */
+            slot_count: number | string;
+            /** Format: int64 */
+            maximum_budget: number | string;
+            /** Format: date-time */
+            deadline: null | string;
+            /** Format: uuid */
+            project_id: string;
+            project_name: string;
+            owner_username: string;
+            requirements: components["schemas"]["TaskRequirementView"][];
+            /** Format: date-time */
+            created_at: string;
         };
         TransitionProjectRequest: {
             /** Format: int32 */
@@ -2195,6 +2405,350 @@ export interface operations {
             };
             /** @description Too Many Requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ListTasks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedResultOfTaskSummaryView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    CreateTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskBody"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    GetTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    UpdateTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    PublishTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    CancelTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -55,6 +55,25 @@ export type CreditTransactionPageResponse =
 
 export type CreditTransactionResponse = CreditTransactionPageResponse["items"][number];
 
+export type TaskListResponse = paths["/v1/tasks"]["get"]["responses"][200]["content"]["application/json"];
+
+export type TaskSummaryResponse = TaskListResponse["items"][number];
+
+export type TaskDetailResponse = paths["/v1/tasks/{id}"]["get"]["responses"][200]["content"]["application/json"];
+
+export type TaskRequirementResponse = TaskSummaryResponse["requirements"][number];
+
+export type TaskStepResponse = TaskDetailResponse["steps"][number];
+
+export type TaskSlotResponse = TaskDetailResponse["slots"][number];
+
+export type TaskStatusChangeResponse = TaskDetailResponse["status_history"][number];
+
+/** The body of a write command of a task. It holds no credential. */
+export type TaskBody = Partial<
+  paths["/v1/tasks"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
 /** The body of the grant command. It holds no credential. */
 export type ClaimGrantBody = Partial<
   paths["/v1/wallet/grant"]["post"]["requestBody"]["content"]["application/json"]
@@ -225,6 +244,40 @@ export type BlindmeshClient = {
     csrfToken: string,
     idempotencyKey: string,
   ): Promise<ClientResult<CreditWalletResponse>>;
+  /** Lists the tasks of the marketplace that the caller may see. */
+  listTasks(options?: {
+    limit?: number;
+    cursor?: string;
+    mode?: string;
+    requirement?: string;
+    projectId?: string;
+  }): Promise<ClientResult<TaskListResponse>>;
+  /** Reads the committed state of a task. */
+  getTask(id: string): Promise<ClientResult<TaskDetailResponse>>;
+  /** Writes a task in the draft state. */
+  createTask(
+    body: TaskBody,
+    csrfToken: string,
+    idempotencyKey?: string,
+  ): Promise<ClientResult<TaskDetailResponse>>;
+  /** Changes the editable content of a task. */
+  updateTask(
+    id: string,
+    body: TaskBody,
+    csrfToken: string,
+  ): Promise<ClientResult<TaskDetailResponse>>;
+  /** Publishes a task and reserves its maximum budget. */
+  publishTask(
+    id: string,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<TaskDetailResponse>>;
+  /** Closes the admission of a task and refunds its unused slots. */
+  cancelTask(
+    id: string,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<TaskDetailResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -486,6 +539,74 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
           "Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    listTasks: (options) => {
+      const query = new URLSearchParams();
+
+      if (options?.limit !== undefined) {
+        query.set("limit", String(options.limit));
+      }
+
+      if (options?.cursor) {
+        query.set("cursor", options.cursor);
+      }
+
+      if (options?.mode) {
+        query.set("mode", options.mode);
+      }
+
+      if (options?.requirement) {
+        query.set("requirement", options.requirement);
+      }
+
+      if (options?.projectId) {
+        query.set("project_id", options.projectId);
+      }
+
+      const suffix = query.toString();
+
+      return request<TaskListResponse>(`/tasks${suffix ? `?${suffix}` : ""}`, { cache: "no-store" });
+    },
+    getTask: (id) => request<TaskDetailResponse>(`/tasks/${encodeURIComponent(id)}`, { cache: "no-store" }),
+    createTask: (body, csrfToken, idempotencyKey) =>
+      request<TaskDetailResponse>("/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    updateTask: (id, body, csrfToken) =>
+      request<TaskDetailResponse>(`/tasks/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    publishTask: (id, csrfToken, idempotencyKey) =>
+      request<TaskDetailResponse>(`/tasks/${encodeURIComponent(id)}/publish`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify({}),
+        cache: "no-store",
+      }),
+    cancelTask: (id, csrfToken, idempotencyKey) =>
+      request<TaskDetailResponse>(`/tasks/${encodeURIComponent(id)}/cancel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify({}),
         cache: "no-store",
       }),
   };

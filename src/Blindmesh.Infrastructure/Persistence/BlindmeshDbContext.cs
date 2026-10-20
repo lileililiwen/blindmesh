@@ -7,6 +7,7 @@ using Blindmesh.Infrastructure.Credits;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Blindmesh.Infrastructure.Projects;
+using Blindmesh.Infrastructure.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blindmesh.Infrastructure.Persistence;
@@ -53,6 +54,16 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
 
     public DbSet<GrantClaim> GrantClaims => Set<GrantClaim>();
 
+    public DbSet<Blindmesh.Domain.Tasks.MarketplaceTask> Tasks => Set<Blindmesh.Domain.Tasks.MarketplaceTask>();
+
+    public DbSet<Blindmesh.Domain.Tasks.TaskRequirement> TaskRequirements => Set<Blindmesh.Domain.Tasks.TaskRequirement>();
+
+    public DbSet<Blindmesh.Domain.Tasks.TaskStep> TaskSteps => Set<Blindmesh.Domain.Tasks.TaskStep>();
+
+    public DbSet<Blindmesh.Domain.Tasks.TaskSlot> TaskSlots => Set<Blindmesh.Domain.Tasks.TaskSlot>();
+
+    public DbSet<Blindmesh.Domain.Tasks.TaskStatusChange> TaskStatusChanges => Set<Blindmesh.Domain.Tasks.TaskStatusChange>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OutboxMessageEntity>(entity =>
@@ -98,5 +109,9 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // The tables of the credits module. They are owned by the credits
         // package and are not changed by any other module.
         modelBuilder.ApplyCreditModel();
+
+        // The tables of the tasks module. They are owned by the tasks package
+        // and are not changed by any other module.
+        modelBuilder.ApplyTaskModel();
     }
 }

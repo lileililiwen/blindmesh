@@ -65,6 +65,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 </li>
 
+                <li>
+                  <Link
+                    href="/tasks"
+                    aria-current={pathname.startsWith("/tasks") ? "page" : undefined}
+                    className="text-small underline underline-offset-4"
+                  >
+                    Tasks
+                  </Link>
+                </li>
+
                 {signedIn && user ? (
                   <>
                     <li>

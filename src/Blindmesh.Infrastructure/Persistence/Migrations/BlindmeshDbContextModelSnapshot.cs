@@ -850,6 +850,278 @@ namespace Blindmesh.Infrastructure.Persistence.Migrations
                     b.ToTable("project_versions", (string)null);
                 });
 
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.MarketplaceTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AcceptsCleanFindings")
+                        .HasColumnType("boolean")
+                        .HasColumnName("accepts_clean_findings");
+
+                    b.Property<string>("AccessKind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("access_kind");
+
+                    b.Property<string>("AccessResource")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("access_resource");
+
+                    b.Property<long>("BaseReward")
+                        .HasColumnType("bigint")
+                        .HasColumnName("base_reward");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("Deadline")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("deadline");
+
+                    b.Property<int>("ExpectedMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("expected_minutes");
+
+                    b.Property<int>("Modes")
+                        .HasColumnType("integer")
+                        .HasColumnName("modes");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_id");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("published_at");
+
+                    b.Property<long>("ReservedBudget")
+                        .HasColumnType("bigint")
+                        .HasColumnName("reserved_budget");
+
+                    b.Property<string>("ReviewCriteria")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("review_criteria");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasMaxLength(10000)
+                        .HasColumnType("character varying(10000)")
+                        .HasColumnName("scope");
+
+                    b.Property<long>("SlotBonus")
+                        .HasColumnType("bigint")
+                        .HasColumnName("slot_bonus");
+
+                    b.Property<int>("SlotCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("slot_count");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(140)
+                        .HasColumnType("character varying(140)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("visibility");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("CreatedAt", "Id")
+                        .HasDatabaseName("ix_tasks_created_at_id");
+
+                    b.HasIndex("ProjectId", "CreatedAt")
+                        .HasDatabaseName("ix_tasks_project_id_created_at");
+
+                    b.HasIndex("Status", "Modes")
+                        .HasDatabaseName("ix_tasks_status_modes");
+
+                    b.ToTable("tasks", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.TaskRequirement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId")
+                        .HasDatabaseName("ix_task_requirements_task_id");
+
+                    b.HasIndex("Kind", "Value", "TaskId")
+                        .HasDatabaseName("ix_task_requirements_kind_value_task_id");
+
+                    b.ToTable("task_requirements", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.TaskSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ContributorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("contributor_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<long>("Reward")
+                        .HasColumnType("bigint")
+                        .HasColumnName("reward");
+
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("state");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId", "Position")
+                        .HasDatabaseName("ix_task_slots_task_id_position");
+
+                    b.ToTable("task_slots", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.TaskStatusChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("changed_at");
+
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("changed_by");
+
+                    b.Property<string>("FromStatus")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("from_status");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("to_status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId", "ChangedAt")
+                        .HasDatabaseName("ix_task_history_task_id_changed_at");
+
+                    b.ToTable("task_history", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.TaskStep", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ExpectedResult")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("expected_result");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId", "Position")
+                        .HasDatabaseName("ix_task_steps_task_id_position");
+
+                    b.ToTable("task_steps", (string)null);
+                });
+
             modelBuilder.Entity("Blindmesh.Infrastructure.Persistence.Entities.IdempotencyRecordEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1121,6 +1393,57 @@ namespace Blindmesh.Infrastructure.Persistence.Migrations
                     b.HasOne("Blindmesh.Domain.Projects.Project", null)
                         .WithMany()
                         .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.MarketplaceTask", b =>
+                {
+                    b.HasOne("Blindmesh.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Blindmesh.Domain.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.TaskRequirement", b =>
+                {
+                    b.HasOne("Blindmesh.Domain.Tasks.MarketplaceTask", null)
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.TaskSlot", b =>
+                {
+                    b.HasOne("Blindmesh.Domain.Tasks.MarketplaceTask", null)
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.TaskStatusChange", b =>
+                {
+                    b.HasOne("Blindmesh.Domain.Tasks.MarketplaceTask", null)
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Tasks.TaskStep", b =>
+                {
+                    b.HasOne("Blindmesh.Domain.Tasks.MarketplaceTask", null)
+                        .WithMany()
+                        .HasForeignKey("TaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

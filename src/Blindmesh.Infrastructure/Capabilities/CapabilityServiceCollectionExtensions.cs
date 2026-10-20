@@ -1,4 +1,5 @@
 using Blindmesh.Application.Capabilities;
+using Blindmesh.Application.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Blindmesh.Infrastructure.Capabilities;
@@ -15,9 +16,10 @@ public static class CapabilityServiceCollectionExtensions
         services.AddScoped<CapabilityService>();
 
         // The seam that hands the hard conditions of a published task to the
-        // module. The task publication package is a later package and replaces
-        // this reader with the one that reads a published task.
-        services.AddScoped<ITaskConditionReader, NoPublishedTaskConditionReader>();
+        // module. The reader of the task publication package answers with the
+        // conditions of a real task and with null for a task that the actor may
+        // not see.
+        services.AddScoped<ITaskConditionReader, PublishedTaskConditionReader>();
 
         return services;
     }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "requirements.md",
-  "selected": "credit-ledger",
+  "selected": "task-publication",
   "changes": [
     {
       "id": "runtime-foundation",
@@ -52,8 +52,8 @@
         "identity-profiles"
       ],
       "requirement_prefix": "CRED",
-      "status": "proposed",
-      "readiness": "next-in-order",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-20",
       "module": "src/Blindmesh.Domain/Credits, src/Blindmesh.Application/Credits, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {
@@ -66,7 +66,7 @@
       ],
       "requirement_prefix": "TASK",
       "status": "proposed",
-      "readiness": "implementation-ready-after-prerequisites",
+      "readiness": "next-in-order",
       "module": "src/Blindmesh.Domain/Tasks, src/Blindmesh.Application/Tasks, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {

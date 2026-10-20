@@ -16,6 +16,24 @@ public interface IIdentityStore
     Task<User?> FindUserByExternalIdentityAsync(string provider, string subject, CancellationToken cancellationToken);
 
     /// <summary>
+    /// The provider identity of a user. It is null when the user has no
+    /// linked provider account. A module that needs the provider subject of a
+    /// user reads it here, so the identity module stays the only owner of the
+    /// provider identities.
+    /// </summary>
+    Task<ExternalIdentity?> FindExternalIdentityAsync(Guid userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Stores the creation date of the account at the provider. The provider
+    /// owns that date, so the identity module keeps it in step with the
+    /// provider instead of guessing it.
+    /// </summary>
+    Task UpdateExternalAccountCreatedAtAsync(
+        Guid userId,
+        DateTimeOffset? accountCreatedAt,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Stores a new user with its provider identity. False means that the
     /// username or the provider identity is already taken.
     /// </summary>

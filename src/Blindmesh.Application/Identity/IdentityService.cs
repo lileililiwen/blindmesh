@@ -334,6 +334,7 @@ public sealed class IdentityService(
         else
         {
             await UpdateProviderFieldsAsync(user, identity, now, cancellationToken);
+            await store.UpdateExternalAccountCreatedAtAsync(user.Id, identity.AccountCreatedAt, cancellationToken);
         }
 
         var (session, token, csrfToken) = NewSession(user.Id, now);
@@ -443,6 +444,7 @@ public sealed class IdentityService(
                 UserId = user.Id,
                 Provider = identity.Provider,
                 Subject = identity.Subject,
+                AccountCreatedAt = identity.AccountCreatedAt,
                 CreatedAt = now,
             };
 

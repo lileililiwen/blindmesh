@@ -1,7 +1,9 @@
 using Blindmesh.Domain.Capabilities;
+using Blindmesh.Domain.Credits;
 using Blindmesh.Domain.Identity;
 using Blindmesh.Domain.Projects;
 using Blindmesh.Infrastructure.Capabilities;
+using Blindmesh.Infrastructure.Credits;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Blindmesh.Infrastructure.Projects;
@@ -40,6 +42,16 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
     public DbSet<CapabilityTag> CapabilityTags => Set<CapabilityTag>();
 
     public DbSet<CapabilityStatusChange> CapabilityStatusChanges => Set<CapabilityStatusChange>();
+
+    public DbSet<LedgerAccount> LedgerAccounts => Set<LedgerAccount>();
+
+    public DbSet<LedgerTransaction> LedgerTransactions => Set<LedgerTransaction>();
+
+    public DbSet<LedgerEntry> LedgerEntries => Set<LedgerEntry>();
+
+    public DbSet<CreditLot> CreditLots => Set<CreditLot>();
+
+    public DbSet<GrantClaim> GrantClaims => Set<GrantClaim>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -82,5 +94,9 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         modelBuilder.ApplyIdentityModel();
         modelBuilder.ApplyProjectModel();
         modelBuilder.ApplyCapabilityModel();
+
+        // The tables of the credits module. They are owned by the credits
+        // package and are not changed by any other module.
+        modelBuilder.ApplyCreditModel();
     }
 }

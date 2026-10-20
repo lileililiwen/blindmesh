@@ -16,5 +16,12 @@ public sealed class ExternalIdentity
     /// <summary>The stable subject of the account at the provider.</summary>
     public string Subject { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The moment the account was created at the provider. It is the age of
+    /// the provider account, and it does not change. It is null when the
+    /// provider does not report it.
+    /// </summary>
+    public DateTimeOffset? AccountCreatedAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 }

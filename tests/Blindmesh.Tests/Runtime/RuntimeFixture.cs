@@ -41,6 +41,34 @@ public sealed class RuntimeFixture : IAsyncLifetime
         await using var dbContext = new BlindmeshDbContext(options);
         await dbContext.Database.MigrateAsync();
     }
+
+    /// <summary>
+    /// Creates a second database in the container of the test run. A test that
+    /// walks through the migrations needs its own schema, so it never touches
+    /// the schema of the other tests.
+    /// </summary>
+    public async Task<string> CreateDatabaseAsync(string name)
+    {
+        var builder = new Npgsql.NpgsqlConnectionStringBuilder(ConnectionString)
+        {
+            Database = "postgres",
+        };
+
+        await using (var connection = new Npgsql.NpgsqlConnection(builder.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"CREATE DATABASE \"{name}\"";
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var target = new Npgsql.NpgsqlConnectionStringBuilder(ConnectionString)
+        {
+            Database = name,
+        };
+
+        return target.ConnectionString;
+    }
 }
 
 [CollectionDefinition(Name)]

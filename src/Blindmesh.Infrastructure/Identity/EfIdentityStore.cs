@@ -26,6 +26,26 @@ public sealed class EfIdentityStore(BlindmeshDbContext dbContext) : IIdentitySto
          where identity.Provider == provider && identity.Subject == subject
          select user).FirstOrDefaultAsync(cancellationToken);
 
+    public Task<ExternalIdentity?> FindExternalIdentityAsync(Guid userId, CancellationToken cancellationToken) =>
+        dbContext.ExternalIdentities.FirstOrDefaultAsync(identity => identity.UserId == userId, cancellationToken);
+
+    public async Task UpdateExternalAccountCreatedAtAsync(
+        Guid userId,
+        DateTimeOffset? accountCreatedAt,
+        CancellationToken cancellationToken)
+    {
+        var identity = await dbContext.ExternalIdentities
+            .FirstOrDefaultAsync(item => item.UserId == userId, cancellationToken);
+
+        if (identity is null || identity.AccountCreatedAt == accountCreatedAt)
+        {
+            return;
+        }
+
+        identity.AccountCreatedAt = accountCreatedAt;
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<bool> TryAddUserAsync(User user, ExternalIdentity identity, CancellationToken cancellationToken)
     {
         var transaction = dbContext.Database.CurrentTransaction;

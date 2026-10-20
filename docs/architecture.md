@@ -102,6 +102,52 @@ The conditions of a task reach the module through a seam, `ITaskConditionReader`
 
 The route `/tasks/{id}/eligibility` of the web application follows the same safe page that the project package uses for a project that may not be seen: a task that is not published shows the honest state and no eligibility. The route stays usable, because the page also offers the same evaluation for a condition that the contributor names, so the decision and its reason can be read and checked without a published task.
 
+## Credit endpoints
+
+The credits package owns these endpoints. They are under the same prefixes as the endpoints of the foundation, and the browser reaches them under `/api/v1`.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/wallet` | Reads the wallet of the signed in contributor: the available, the reserved and the pending balance, the lots with their expiry and the state of the limited grant. The optional query `user_id` names the owner of the wallet; the wallet of another contributor answers 404 without an amount. |
+| `GET /v1/wallet/transactions` | Lists the transactions of the wallet of the signed in contributor in the list envelope `{items,next_cursor}`. The limit defaults to 20 and is capped at 100. Only the entries of the own accounts are part of the answer. |
+| `POST /v1/wallet/grant` | Claims the limited grant of the signed in contributor. It requires the `Idempotency-Key` header (16 to 128 printable ASCII characters) and the body field `rules_accepted`. The same key with the same payload replays the original answer, the same key with another payload answers 409. |
+
+There is no public transfer and no public balance editor. The escrow primitives are internal methods of the credit service; the package that owns the task calls them inside its own transaction.
+
+### The escrow primitives are internal
+
+The credit service exposes the grant, the reservation, the start of the work, the payment and the refund. Only the grant is a public command of this package, because only the grant belongs to a contributor who is not a publisher. The other four primitives move credits between the buckets of a task, so they belong to the package that owns the task and the participation, and that package is not implemented yet. They are proved by the integration tests of this package through the application service, not through a public route. A later package calls them with the same scoped database context and the same transaction as its own command, so the entries of the escrow and the idempotency record of the command are committed together.
+
+The names of the primitives are the ones of the shared contract: `GrantOnceAsync`, `ReserveTaskAsync`, `BeginPendingAsync`, `SettleAsync` and `RefundUnstartedAsync`. The primitive of the dispute and the reconciliation of the whole ledger come with the packages that own a dispute and the periodic reconciliation; this package does not answer a dispute and does not run a scheduler.
+
+The wallet of a contributor is private. Every read, list and command of the module is authorized: a visitor without a session receives 401, the wallet of another contributor answers 404 without an amount, and the history holds only the entries of the own accounts.
+
+### The grant: eligibility, the cap and the uniqueness of a subject
+
+The eligibility of the grant is derived from the committed state of the identity package and from the injected clock. The identity package stores the verified provider email and the creation date of the account at the provider; the credit service reads both through the identity store and never trusts a field of the request. An account is eligible when it has a verified provider email, when it is at least seven days old and when the contributor accepts the rules of the marketplace in the claim itself. The age of the account is the age of the account at the provider, because the provider owns that date and the date does not change; the identity module keeps it in step with the provider at every sign in. The creation of the product account is the fallback for a provider that reports no date. A body that holds a field outside `rules_accepted` is refused before anything is stored and without an echo of the refused field. The local OAuth fixture declares a stable age for every seeded account, so the seeded accounts have a real age no matter when their row was created; the seeded account of cara is one day old and has no verified email, and the grant of a young account is refused with the reason.
+
+The uniqueness of a subject is a unique index on `grant_claims(provider, subject)`. The claim of a subject that claimed already answers 409 and issues nothing.
+
+The daily cap of the platform is 6000 credits in 24 hours, and the daily limit of an address is 5 claims. Both are decided under the lock of the accounts and both are counted from the claims of the last 24 hours.
+
+The claim is serialized against the global cap and against the account of the contributor. The accounts of a claim are the ordinary account of the contributor and the issuance account of the platform. They are locked in the order of their identifiers, and the identifier of an account is derived from its bucket, its owner and its reference, so the order is the same in every command. The claim reads the state of the cap and the claim of the subject again under that lock, so two concurrent claims of the same subject issue one grant, and the cap of the platform is never exceeded by two concurrent claims. A serialization failure or a deadlock of the database is retried at most three times with the same key and the same payload.
+
+### The journal, the lots and the persistence of the package
+
+The tables of the package are `ledger_accounts`, `ledger_transactions`, `ledger_entries`, `credit_lots` and `grant_claims`. The table `idempotency_records` comes from the runtime foundation and is used by the money commands of this package.
+
+| Table | Content |
+|---|---|
+| `ledger_accounts` | One row per bucket of an owner. The bucket is `UserAvailable`, `Reserved`, `Pending`, `PlatformIssuance` or `PlatformExpiry`. The ordinary account of a contributor has an empty reference, the escrow accounts carry the reference of the task and the platform accounts carry the constant platform reference. The identifier of a row is derived from the bucket, the owner and the reference, so the same account is never created twice. |
+| `ledger_transactions` | One row per movement of credits. It holds the kind, the reference, the actor, the idempotency key of the command and the moment of the movement. A transaction is never changed. |
+| `ledger_entries` | The entries of a transaction. Every entry holds the account, the signed amount and the lot it belongs to. An entry is never changed; a correction is a compensating transaction. The signed sum of the entries of a transaction is zero. |
+| `credit_lots` | The lots of a contributor: the kind (`grant` or `earned`), the origin, the original amount, the spendable, the reserved and the pending amount and the expiry. A grant lot expires, an earned lot never does. The lot is the cached view of the journal, and the reconciliation compares it with the journal. |
+| `grant_claims` | One row per claimed provider subject: the provider, the subject, the contributor, the account, the transaction, the issued amount, the address of the claim, the moment of the accepted rules, the moment of the issue and the expiry. |
+
+The lock order of a money command follows the shared contract: the task, the participation or the slot, then the accounts sorted by their identifiers, then the ledger. The accounts of a command are locked with `SELECT ... FOR UPDATE` in the order of the identifiers of the database, and the rows of the accounts are created in the same order, so two commands never wait for each other. A command of the escrow that would overspend the ordinary account of a contributor answers 409 and writes no entry; the ordinary bucket of a contributor is never negative. A command that is retried with the same key and the same payload answers with the original result and writes no second entry.
+
+The expiry of a grant lot removes only the spendable units of the lot; the reserved units stay valid until the reservation is resolved. A reserved grant that is paid becomes an earned credit that never expires. A reserved grant that is refunded after it expired goes to the expiry sink of the platform instead of back to the publisher, so no balance of a contributor ever goes negative. The wallet of a contributor materializes the expiry of the lots that ran out when it is read, so the balance of the wallet and the balance of the journal are the same.
+
 ## Local runtime
 
 ```sh
@@ -195,6 +241,8 @@ The identity package adds the routes `/sign-in`, `/onboarding`, `/settings/profi
 The project package adds the routes `/projects`, `/projects/new`, `/projects/{id}` and `/projects/{id}/settings`. The list shows the projects the visitor may see and explains the next action when it is empty. The create form and the settings page keep the draft of the contributor after a refusal, mark the field of a validation error and give it the focus, and announce a success only after the server committed it. The settings page shows the content, the visibility, the lifecycle, the team and the versions of a project, and it explains the restriction to a member without the right to change it. The archive and the removal of a member confirm their consequences. A project that may not be seen shows the same safe page as a project that does not exist.
 
 The capability package adds the routes `/capabilities`, `/settings/capabilities` and `/tasks/{id}/eligibility`. The directory shows the capabilities the visitor may see, marks the ones that a match uses and explains the next action when it is empty. The settings page declares, edits and withdraws the own declarations, keeps the draft of the contributor after a refusal, marks the field of a validation error and gives it the focus, shows the history of a withdrawn declaration and confirms the consequences of a withdrawal. The eligibility route shows the honest state of a task that is not published and offers the same evaluation for a condition that the contributor names, so the decision and its reason stay readable. A private capability of another contributor is in no answer.
+
+The credits package adds the routes `/wallet` and `/wallet/history`. The wallet shows the available, the reserved and the pending balance of the contributor, the lots with their expiry and the state of the limited grant. The grant of a contributor who is not eligible is not a dead end: the page names every condition that is not met, so the account knows what to do. The history shows every movement of the credits of the wallet with its reference and the change of every bucket, and it explains the next action when the wallet has no movement yet. A wallet without a session offers the sign in with an allowlisted return path, and the wallet of another contributor is not found. The claim of the grant waits for the acceptance of the rules, announces its result only after the server committed it and never announces a success that the server refused.
 
 360px: one column, dialogs fit viewport, tables become labeled lists; 768px: collapsed navigation; 1440px: persistent navigation and restrained readable widths. No page-level horizontal scrolling. Every route defines initial/loading/empty/validation/error/unavailable/permission/success/recovery; preserve draft values after recoverable errors, never announce success before server commit. Destructive operations confirm consequences and restore focus. Server-only private reads use no-store; TanStack keys include actor identity and are cleared on logout; public views omit sensitive fields and query caches.
 

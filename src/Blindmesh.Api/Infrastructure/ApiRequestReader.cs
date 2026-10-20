@@ -1,18 +1,18 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Blindmesh.Api.Endpoints.Capabilities;
+namespace Blindmesh.Api.Infrastructure;
 
 /// <summary>
-/// Reads the small request bodies of the capabilities module. A body that is
+/// Reads the small request bodies of the API. A body that is
 /// not valid JSON is refused with the standard error envelope; the parser
 /// never echoes the body back to the caller. A body that holds a field outside
 /// the allowed ones is refused as well, so a credential that was sent in a
 /// field of the body is never stored and never echoed.
 /// </summary>
-internal static class CapabilityRequestReader
+internal static class ApiRequestReader
 {
-    public static async Task<CapabilityBody<T>> ReadAsync<T>(
+    public static async Task<ApiBody<T>> ReadAsync<T>(
         HttpRequest request,
         JsonSerializerOptions serializerOptions,
         IReadOnlyCollection<string> allowedFields,
@@ -29,7 +29,7 @@ internal static class CapabilityRequestReader
 
         if (string.IsNullOrWhiteSpace(raw))
         {
-            return new CapabilityBody<T>(raw, default, false);
+            return new ApiBody<T>(raw, default, false);
         }
 
         try
@@ -38,7 +38,7 @@ internal static class CapabilityRequestReader
 
             if (document.RootElement.ValueKind != JsonValueKind.Object)
             {
-                return new CapabilityBody<T>(raw, default, false);
+                return new ApiBody<T>(raw, default, false);
             }
 
             foreach (var property in document.RootElement.EnumerateObject())
@@ -46,25 +46,25 @@ internal static class CapabilityRequestReader
                 if (!allowedFields.Contains(property.Name))
                 {
                     // The refused field is never named back to the caller.
-                    return new CapabilityBody<T>(raw, default, false);
+                    return new ApiBody<T>(raw, default, false);
                 }
             }
         }
         catch (JsonException)
         {
-            return new CapabilityBody<T>(raw, default, false);
+            return new ApiBody<T>(raw, default, false);
         }
 
         try
         {
-            return new CapabilityBody<T>(raw, JsonSerializer.Deserialize<T>(raw, serializerOptions), true);
+            return new ApiBody<T>(raw, JsonSerializer.Deserialize<T>(raw, serializerOptions), true);
         }
         catch (JsonException)
         {
-            return new CapabilityBody<T>(raw, default, false);
+            return new ApiBody<T>(raw, default, false);
         }
     }
 }
 
 /// <summary>The raw body of a request, its parsed value and its shape.</summary>
-internal sealed record CapabilityBody<T>(string Raw, T? Value, bool IsValid);
+internal sealed record ApiBody<T>(string Raw, T? Value, bool IsValid);

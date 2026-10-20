@@ -5,7 +5,9 @@ namespace Blindmesh.Infrastructure.Identity;
 
 /// <summary>
 /// A seeded account of the local OAuth fixture. The fixture is the test
-/// double of the identity provider; it never runs in production.
+/// double of the identity provider; it never runs in production. The age of
+/// the account counts from the moment of the sign in, so the seeded accounts
+/// have a real age and not a date of the past.
 /// </summary>
 public sealed record FixtureActor(
     string Key,
@@ -13,7 +15,7 @@ public sealed record FixtureActor(
     string Login,
     string Email,
     string Role,
-    DateTimeOffset AccountCreatedAt,
+    int AccountAgeDays,
     bool EmailVerified);
 
 /// <summary>
@@ -31,11 +33,11 @@ public static class LocalGitHubFixture
 
     public static readonly IReadOnlyList<FixtureActor> Actors =
     [
-        new("alice", "1001", "alice", "alice@blindmesh.test", UserRole.User, DateTimeOffset.UnixEpoch.AddDays(400), true),
-        new("bob", "1002", "bob", "bob@blindmesh.test", UserRole.User, DateTimeOffset.UnixEpoch.AddDays(30), true),
-        new("cara", "1003", "cara", "cara@blindmesh.test", UserRole.User, DateTimeOffset.UnixEpoch.AddDays(1), false),
-        new("dana", "1004", "dana", "dana@blindmesh.test", UserRole.Moderator, DateTimeOffset.UnixEpoch.AddDays(120), true),
-        new("erin", "1005", "erin", "erin@blindmesh.test", UserRole.Administrator, DateTimeOffset.UnixEpoch.AddDays(200), true),
+        new("alice", "1001", "alice", "alice@blindmesh.test", UserRole.User, 400, true),
+        new("bob", "1002", "bob", "bob@blindmesh.test", UserRole.User, 30, true),
+        new("cara", "1003", "cara", "cara@blindmesh.test", UserRole.User, 1, false),
+        new("dana", "1004", "dana", "dana@blindmesh.test", UserRole.Moderator, 120, true),
+        new("erin", "1005", "erin", "erin@blindmesh.test", UserRole.Administrator, 200, true),
     ];
 
     public static FixtureActor? Find(string? key) =>
@@ -86,11 +88,16 @@ public sealed class LocalGitHubFixtureClient(IdentityOptions options) : IGitHubI
         var accessToken = LocalGitHubFixture.MintAccessToken(actor);
         _ = accessToken;
 
+        // The provider only hands out a verified primary email. An account
+        // without one has no email address, exactly like the real provider.
+        var email = actor.EmailVerified ? actor.Email : string.Empty;
+
         return Task.FromResult(new ProviderIdentity(
             IdentityProviders.GitHub,
             actor.Subject,
             actor.Login,
-            actor.Email,
-            actor.Role));
+            email,
+            actor.Role,
+            DateTimeOffset.UtcNow.AddDays(-actor.AccountAgeDays)));
     }
 }

@@ -44,6 +44,22 @@ export type CapabilityEligibilityResponse =
 
 export type CapabilityConditionOutcomeResponse = CapabilityEligibilityResponse["conditions"][number];
 
+export type CreditWalletResponse = paths["/v1/wallet"]["get"]["responses"][200]["content"]["application/json"];
+
+export type CreditLotResponse = CreditWalletResponse["lots"][number];
+
+export type CreditGrantResponse = CreditWalletResponse["grant"];
+
+export type CreditTransactionPageResponse =
+  paths["/v1/wallet/transactions"]["get"]["responses"][200]["content"]["application/json"];
+
+export type CreditTransactionResponse = CreditTransactionPageResponse["items"][number];
+
+/** The body of the grant command. It holds no credential. */
+export type ClaimGrantBody = Partial<
+  paths["/v1/wallet/grant"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
 /** The body of a create command of a capability. */
 export type CreateCapabilityBody = Partial<
   paths["/v1/capabilities"]["post"]["requestBody"]["content"]["application/json"]
@@ -199,6 +215,16 @@ export type BlindmeshClient = {
   ): Promise<ClientResult<CapabilityEligibilityResponse>>;
   /** Evaluates the hard conditions of a published task against the declarations of the caller. */
   evaluateTaskEligibility(taskId: string, csrfToken: string): Promise<ClientResult<CapabilityEligibilityResponse>>;
+  /** Reads the wallet of the signed in contributor. */
+  getWallet(): Promise<ClientResult<CreditWalletResponse>>;
+  /** Lists the transactions of the wallet of the signed in contributor. */
+  listWalletTransactions(limit?: number, cursor?: string): Promise<ClientResult<CreditTransactionPageResponse>>;
+  /** Claims the limited grant of the signed in contributor. */
+  claimGrant(
+    body: ClaimGrantBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<CreditWalletResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -431,6 +457,35 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
       request<CapabilityEligibilityResponse>(`/capabilities/tasks/${encodeURIComponent(taskId)}/eligibility`, {
         method: "GET",
         headers: { ...withCsrf(csrfToken) },
+        cache: "no-store",
+      }),
+    getWallet: () => request<CreditWalletResponse>("/wallet", { cache: "no-store" }),
+    listWalletTransactions: (limit, cursor) => {
+      const query = new URLSearchParams();
+
+      if (limit !== undefined) {
+        query.set("limit", String(limit));
+      }
+
+      if (cursor) {
+        query.set("cursor", cursor);
+      }
+
+      const suffix = query.toString();
+
+      return request<CreditTransactionPageResponse>(`/wallet/transactions${suffix ? `?${suffix}` : ""}`, {
+        cache: "no-store",
+      });
+    },
+    claimGrant: (body, csrfToken, idempotencyKey) =>
+      request<CreditWalletResponse>("/wallet/grant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
         cache: "no-store",
       }),
   };

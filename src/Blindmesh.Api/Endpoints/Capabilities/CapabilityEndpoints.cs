@@ -173,7 +173,7 @@ public static class CapabilityEndpoints
             return refusal;
         }
 
-        var body = await CapabilityRequestReader.ReadAsync<CreateCapabilityRequest>(
+        var body = await ApiRequestReader.ReadAsync<CreateCapabilityRequest>(
             context.Request,
             jsonOptions.Value.SerializerOptions,
             CreateFields,
@@ -345,7 +345,7 @@ public static class CapabilityEndpoints
             return refusal;
         }
 
-        var body = await CapabilityRequestReader.ReadAsync<UpdateCapabilityRequest>(
+        var body = await ApiRequestReader.ReadAsync<UpdateCapabilityRequest>(
             context.Request,
             jsonOptions.Value.SerializerOptions,
             UpdateFields,
@@ -437,7 +437,7 @@ public static class CapabilityEndpoints
             return refusal;
         }
 
-        var body = await CapabilityRequestReader.ReadAsync<WithdrawCapabilityRequest>(
+        var body = await ApiRequestReader.ReadAsync<WithdrawCapabilityRequest>(
             context.Request,
             jsonOptions.Value.SerializerOptions,
             WithdrawFields,
@@ -481,7 +481,7 @@ public static class CapabilityEndpoints
             return refusal;
         }
 
-        var body = await CapabilityRequestReader.ReadAsync<EvaluateEligibilityRequest>(
+        var body = await ApiRequestReader.ReadAsync<EvaluateEligibilityRequest>(
             context.Request,
             jsonOptions.Value.SerializerOptions,
             EligibilityFields,

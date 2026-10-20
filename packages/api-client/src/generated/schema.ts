@@ -328,6 +328,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the wallet of the signed in contributor. */
+        get: operations["GetWallet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/wallet/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the transactions of the wallet of the signed in contributor. */
+        get: operations["ListWalletTransactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/wallet/grant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Claim the limited grant of the signed in contributor. */
+        post: operations["ClaimWalletGrant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -409,12 +460,92 @@ export interface components {
             repository_url: null | string;
             visibility: null | string;
         };
+        CreditBalanceChangeView: {
+            bucket: string;
+            /** Format: int64 */
+            amount: number | string;
+        };
+        CreditEntryView: {
+            /** Format: uuid */
+            id: string;
+            bucket: string;
+            /** Format: int64 */
+            amount: number | string;
+            /** Format: uuid */
+            lot_id: null | string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        CreditGrantView: {
+            eligible: boolean;
+            /** Format: int64 */
+            amount: number | string;
+            /** Format: int32 */
+            expires_in_days: number | string;
+            /** Format: int32 */
+            min_account_age_days: number | string;
+            reasons: string[];
+            /** Format: date-time */
+            claimed_at: null | string;
+            /** Format: date-time */
+            expires_at: null | string;
+        };
+        CreditLotView: {
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            source: string;
+            /** Format: int64 */
+            original_amount: number | string;
+            /** Format: int64 */
+            available_amount: number | string;
+            /** Format: int64 */
+            reserved_amount: number | string;
+            /** Format: int64 */
+            pending_amount: number | string;
+            /** Format: date-time */
+            expires_at: null | string;
+            /** Format: date-time */
+            created_at: string;
+            expired: boolean;
+        };
+        CreditTransactionPage: {
+            items: components["schemas"]["CreditTransactionView"][];
+            next_cursor: null | string;
+        };
+        CreditTransactionView: {
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            reference: string;
+            /** Format: date-time */
+            created_at: string;
+            changes: components["schemas"]["CreditBalanceChangeView"][];
+            entries: components["schemas"]["CreditEntryView"][];
+        };
+        CreditWalletView: {
+            /** Format: uuid */
+            user_id: string;
+            /** Format: int64 */
+            available: number | string;
+            /** Format: int64 */
+            reserved: number | string;
+            /** Format: int64 */
+            pending: number | string;
+            lots: components["schemas"]["CreditLotView"][];
+            grant: components["schemas"]["CreditGrantView"];
+            /** Format: date-time */
+            as_of: string;
+        };
         EligibilityConditionRequest: {
             kind: null | string;
             value: null | string;
         };
         EvaluateEligibilityRequest: {
             conditions: null | components["schemas"]["EligibilityConditionRequest"][];
+        };
+        GrantRequest: {
+            rules_accepted?: boolean;
         };
         PagedResultOfCapabilityView: {
             items: components["schemas"]["CapabilityView"][];
@@ -1892,6 +2023,178 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    GetWallet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditWalletView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ListWalletTransactions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditTransactionPage"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ClaimWalletGrant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrantRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditWalletView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -9,6 +9,8 @@ namespace Blindmesh.Infrastructure.Persistence;
 public static class PostgresErrors
 {
     private const string UniqueViolation = "23505";
+    private const string SerializationFailure = "40001";
+    private const string DeadlockDetected = "40P01";
 
     /// <summary>
     /// True when the failure is a unique constraint violation on the named
@@ -21,6 +23,24 @@ public static class PostgresErrors
             if (current is PostgresException postgresException &&
                 postgresException.SqlState == UniqueViolation &&
                 string.Equals(postgresException.ConstraintName, constraintName, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// True when the failure is a serialization failure or a deadlock of the
+    /// database. The command may be retried with the same key and payload.
+    /// </summary>
+    public static bool IsRetryableConflict(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is PostgresException postgresException &&
+                (postgresException.SqlState == SerializationFailure || postgresException.SqlState == DeadlockDetected))
             {
                 return true;
             }

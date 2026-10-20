@@ -45,6 +45,7 @@ public static class IdentityModelConfiguration
             entity.Property(identity => identity.UserId).HasColumnName("user_id").IsRequired();
             entity.Property(identity => identity.Provider).HasColumnName("provider").HasMaxLength(32).IsRequired();
             entity.Property(identity => identity.Subject).HasColumnName("subject").HasMaxLength(128).IsRequired();
+            entity.Property(identity => identity.AccountCreatedAt).HasColumnName("account_created_at").HasColumnType("timestamptz");
             entity.Property(identity => identity.CreatedAt).HasColumnName("created_at").HasColumnType("timestamptz").IsRequired();
             entity.HasIndex(identity => new { identity.Provider, identity.Subject })
                 .IsUnique()

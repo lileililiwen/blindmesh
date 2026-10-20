@@ -1,6 +1,6 @@
 # Delivery roadmap
 
-The runtime foundation, the identity package, the project package and the capability package are implemented, verified and archived. The changes below that are not archived yet are proposed, unimplemented and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
+The runtime foundation, the identity package, the project package, the capability package and the credit package are implemented, verified and archived. The changes below that are not archived yet are proposed, unimplemented and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
 
 | Order | Target | Change | Independently accepted outcome |
 |---|---|---|---|
@@ -8,7 +8,7 @@ The runtime foundation, the identity package, the project package and the capabi
 | 2 | v0.1 identity | identity-profiles (archived) | GitHub sign-in, safe sessions, onboarding, and visible profiles |
 | 3 | v0.1 projects | project-workspaces (archived) | Owners manage project/version/visibility lifecycles |
 | 4 | v0.1 supply | capability-directory (archived) | Contributors declare and withdraw capabilities with truthful verification status |
-| 5 | v0.1 accounting | credit-ledger | Users see audited balances; limited grants and escrow primitives conserve credits |
+| 5 | v0.1 accounting | credit-ledger (archived) | Users see audited balances; limited grants and escrow primitives conserve credits |
 | 6 | v0.2 marketplace | task-publication | Owners publish budget-backed unified tasks; visitors discover eligible work |
 | 7 | v0.2 execution | participation-execution | Qualified contributors apply, occupy independent slots, start, and withdraw safely |
 | 8 | v0.2 feedback | evidence-findings | Contributors submit protected evidence; owners review and settle work |

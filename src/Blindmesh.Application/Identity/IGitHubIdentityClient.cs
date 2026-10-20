@@ -9,7 +9,8 @@ public sealed record ProviderIdentity(
     string Subject,
     string Login,
     string Email,
-    string? InitialRole = null);
+    string? InitialRole = null,
+    DateTimeOffset? AccountCreatedAt = null);
 
 /// <summary>
 /// The GitHub authorization code flow. The API owns the flow: it sends the

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Blindmesh.Application.Moderation;
 
 namespace Blindmesh.Api.Infrastructure;
 
@@ -14,6 +15,17 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
         try
         {
             await next(context);
+        }
+        catch (AccountBannedException)
+        {
+            logger.LogInformation("Refused a banned account {RequestId}.", RequestIdMiddleware.GetRequestId(context));
+
+            await ApiErrorWriter.Create(
+                context,
+                StatusCodes.Status403Forbidden,
+                ModerationErrorCodes.AccountBanned,
+                "This account is banned. The request was refused before it changed anything.")
+                .ExecuteAsync(context);
         }
         catch (BadHttpRequestException exception)
         {

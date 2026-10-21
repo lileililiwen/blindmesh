@@ -20,10 +20,13 @@ public sealed class CreditService(ICreditStore store, IIdentityStore identity, I
     private const string KindSettle = "settle";
     private const string KindRefund = "refund";
     private const string KindExpiry = "expiry";
+    private const string KindArbitration = "arbitration";
+    private const string KindCompensation = "compensation";
 
     private const string SourceGrant = "grant";
     private const string SourcePending = "pending";
     private const string SourceSettlement = "settlement";
+    private const string SourceArbitration = "arbitration";
 
     public async Task<CreditWalletView?> GetWalletAsync(
         CreditActor actor,
@@ -727,6 +730,254 @@ public sealed class CreditService(ICreditStore store, IIdentityStore identity, I
                     [reservedAccount] = LedgerBucket.Reserved,
                     [availableAccount] = LedgerBucket.UserAvailable,
                     [expiryAccount] = LedgerBucket.PlatformExpiry,
+                }));
+    }
+
+    /// <summary>
+    /// Moves the pending credits of a disputed seat to the contributor that did
+    /// the work, or back to the publisher that owns the task. The reserved
+    /// escrow of the publisher is never touched: only the base of the seat
+    /// moves. The lot of the beneficiary keeps the reference of the seat, so
+    /// that a later appeal can compensate exactly that lot.
+    /// </summary>
+    public async Task<CreditCommandResult> ArbitrateAsync(
+        CreditActor actor,
+        CreditArbitrationCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (!actor.IsAuthenticated)
+        {
+            return new CreditCommandResult(
+                CreditCommandStatus.Forbidden,
+                Message: "A signed in publisher is required to arbitrate a dispute.");
+        }
+
+        if (actor.UserId!.Value != command.PublisherId)
+        {
+            return new CreditCommandResult(
+                CreditCommandStatus.Forbidden,
+                Message: "Only the publisher whose escrow is at stake may arbitrate.");
+        }
+
+        if (!CreditRules.IsValidAmount(command.Amount))
+        {
+            return InvalidAmount();
+        }
+
+        if (!CreditRules.IsValidReference(command.Reference))
+        {
+            return InvalidReference();
+        }
+
+        var reference = command.Reference.Trim();
+        var now = clock.UtcNow;
+        var beneficiaryId = command.AwardToContributor ? command.ContributorId : command.PublisherId;
+
+        var accounts = await PrepareAccountsAsync(
+            [
+                new AccountKey(LedgerBucket.Pending, command.ContributorId, reference),
+                new AccountKey(LedgerBucket.UserAvailable, beneficiaryId, string.Empty),
+            ],
+            now,
+            cancellationToken);
+
+        await store.LockAccountsAsync(accounts.Values.ToList(), cancellationToken);
+
+        var pendingAccount = accounts[new AccountKey(LedgerBucket.Pending, command.ContributorId, reference)];
+        var availableAccount = accounts[new AccountKey(LedgerBucket.UserAvailable, beneficiaryId, string.Empty)];
+
+        var balance = await store.GetBalanceAsync(pendingAccount, cancellationToken);
+
+        if (balance < command.Amount)
+        {
+            return new CreditCommandResult(
+                CreditCommandStatus.Conflict,
+                Message: "There are not that many pending credits.");
+        }
+
+        var pendingLot = await store.FindPendingLotAsync(command.ContributorId, reference, cancellationToken);
+
+        if (pendingLot is null || pendingLot.PendingAmount < command.Amount)
+        {
+            return new CreditCommandResult(
+                CreditCommandStatus.Conflict,
+                Message: "There are not that many pending credits.");
+        }
+
+        pendingLot.PendingAmount -= command.Amount;
+        await store.SaveLotAsync(pendingLot, cancellationToken);
+
+        // The award is an earned credit. It never expires, and it keeps the
+        // reference of the seat, so that an appeal can compensate exactly it.
+        var awardLot = new CreditLot
+        {
+            Id = Guid.NewGuid(),
+            UserId = beneficiaryId,
+            Kind = CreditLotKind.Earned,
+            Source = SourceArbitration,
+            Reference = reference,
+            OriginalAmount = command.Amount,
+            AvailableAmount = command.Amount,
+            ReservedAmount = 0,
+            PendingAmount = 0,
+            ExpiresAt = null,
+            CreatedAt = now,
+        };
+
+        await store.AddLotAsync(awardLot, cancellationToken);
+
+        var transaction = new LedgerTransaction
+        {
+            Id = Guid.NewGuid(),
+            Kind = KindArbitration,
+            Reference = reference,
+            ActorId = command.PublisherId,
+            IdempotencyKey = command.IdempotencyKey,
+            CreatedAt = now,
+        };
+
+        var entries = new List<LedgerEntry>
+        {
+            NewEntry(transaction.Id, pendingAccount, -command.Amount, pendingLot.Id, now),
+            NewEntry(transaction.Id, availableAccount, command.Amount, awardLot.Id, now),
+        };
+
+        await store.AddTransactionAsync(transaction, entries, cancellationToken);
+
+        var wallet = await BuildWalletAsync(beneficiaryId, now, cancellationToken);
+
+        return new CreditCommandResult(
+            CreditCommandStatus.Succeeded,
+            Wallet: wallet,
+            Transaction: SummarizeTransaction(
+                transaction,
+                entries,
+                new Dictionary<Guid, LedgerBucket>
+                {
+                    [pendingAccount] = LedgerBucket.Pending,
+                    [availableAccount] = LedgerBucket.UserAvailable,
+                }));
+    }
+
+    /// <summary>
+    /// Compensates an arbitration after an appeal. It writes new, balanced
+    /// entries that move the amount back from the contributor to the publisher.
+    /// It never touches an entry of an earlier transaction: the rows of the
+    /// first arbitration stay exactly as they were written.
+    /// </summary>
+    public async Task<CreditCommandResult> CompensateArbitrationAsync(
+        CreditActor actor,
+        CreditCompensationCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (!actor.IsAuthenticated)
+        {
+            return new CreditCommandResult(
+                CreditCommandStatus.Forbidden,
+                Message: "A signed in publisher is required to compensate an arbitration.");
+        }
+
+        if (actor.UserId!.Value != command.PublisherId)
+        {
+            return new CreditCommandResult(
+                CreditCommandStatus.Forbidden,
+                Message: "Only the publisher whose escrow is at stake may compensate an arbitration.");
+        }
+
+        if (!CreditRules.IsValidAmount(command.Amount))
+        {
+            return InvalidAmount();
+        }
+
+        if (!CreditRules.IsValidReference(command.Reference))
+        {
+            return InvalidReference();
+        }
+
+        var reference = command.Reference.Trim();
+        var now = clock.UtcNow;
+
+        var accounts = await PrepareAccountsAsync(
+            [
+                new AccountKey(LedgerBucket.UserAvailable, command.ContributorId, string.Empty),
+                new AccountKey(LedgerBucket.UserAvailable, command.PublisherId, string.Empty),
+            ],
+            now,
+            cancellationToken);
+
+        await store.LockAccountsAsync(accounts.Values.ToList(), cancellationToken);
+
+        var contributorAccount = accounts[new AccountKey(LedgerBucket.UserAvailable, command.ContributorId, string.Empty)];
+        var publisherAccount = accounts[new AccountKey(LedgerBucket.UserAvailable, command.PublisherId, string.Empty)];
+
+        var lots = await store.ListLotsAsync(command.ContributorId, cancellationToken);
+
+        var awardLot = lots
+            .Where(lot => lot.Source == SourceArbitration
+                && lot.Reference == reference
+                && lot.AvailableAmount >= command.Amount)
+            .OrderBy(lot => lot.CreatedAt)
+            .FirstOrDefault();
+
+        if (awardLot is null)
+        {
+            return new CreditCommandResult(
+                CreditCommandStatus.Conflict,
+                Message: "The award was already compensated or its balance was already spent.");
+        }
+
+        awardLot.AvailableAmount -= command.Amount;
+        await store.SaveLotAsync(awardLot, cancellationToken);
+
+        // The compensation is an earned credit of the publisher. It keeps the
+        // reference of the seat, so the trail of the case stays readable.
+        var compensationLot = new CreditLot
+        {
+            Id = Guid.NewGuid(),
+            UserId = command.PublisherId,
+            Kind = CreditLotKind.Earned,
+            Source = SourceArbitration,
+            Reference = reference,
+            OriginalAmount = command.Amount,
+            AvailableAmount = command.Amount,
+            ReservedAmount = 0,
+            PendingAmount = 0,
+            ExpiresAt = null,
+            CreatedAt = now,
+        };
+
+        await store.AddLotAsync(compensationLot, cancellationToken);
+
+        var transaction = new LedgerTransaction
+        {
+            Id = Guid.NewGuid(),
+            Kind = KindCompensation,
+            Reference = reference,
+            ActorId = command.PublisherId,
+            IdempotencyKey = command.IdempotencyKey,
+            CreatedAt = now,
+        };
+
+        var entries = new List<LedgerEntry>
+        {
+            NewEntry(transaction.Id, contributorAccount, -command.Amount, awardLot.Id, now),
+            NewEntry(transaction.Id, publisherAccount, command.Amount, compensationLot.Id, now),
+        };
+
+        await store.AddTransactionAsync(transaction, entries, cancellationToken);
+
+        var wallet = await BuildWalletAsync(command.PublisherId, now, cancellationToken);
+
+        return new CreditCommandResult(
+            CreditCommandStatus.Succeeded,
+            Wallet: wallet,
+            Transaction: SummarizeTransaction(
+                transaction,
+                entries,
+                new Dictionary<Guid, LedgerBucket>
+                {
+                    [contributorAccount] = LedgerBucket.UserAvailable,
+                    [publisherAccount] = LedgerBucket.UserAvailable,
                 }));
     }
 

@@ -250,6 +250,10 @@ public static class IdentityEndpoints
         var rawToken = guard.RawToken(context);
         var session = await identityService.ResolveSessionAsync(rawToken, cancellationToken);
 
+        // A banned account is refused here as well, so that every request of a
+        // signed in account is refused before it changes anything.
+        await guard.RefuseBannedAccountAsync(session, cancellationToken);
+
         if (session is { IsBanned: true })
         {
             return ApiErrorWriter.Create(

@@ -6,6 +6,7 @@ using Blindmesh.Infrastructure.Capabilities;
 using Blindmesh.Infrastructure.Credits;
 using Blindmesh.Infrastructure.Findings;
 using Blindmesh.Infrastructure.Identity;
+using Blindmesh.Infrastructure.Moderation;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Blindmesh.Infrastructure.Projects;
 using Blindmesh.Infrastructure.Tasks;
@@ -85,6 +86,18 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
 
     public DbSet<Blindmesh.Domain.Findings.Attachment> Attachments => Set<Blindmesh.Domain.Findings.Attachment>();
 
+    public DbSet<Blindmesh.Domain.Moderation.Report> Reports => Set<Blindmesh.Domain.Moderation.Report>();
+
+    public DbSet<Blindmesh.Domain.Moderation.AccountBan> AccountBans => Set<Blindmesh.Domain.Moderation.AccountBan>();
+
+    public DbSet<Blindmesh.Domain.Moderation.Dispute> Disputes => Set<Blindmesh.Domain.Moderation.Dispute>();
+
+    public DbSet<Blindmesh.Domain.Moderation.DisputeEvidence> DisputeEvidence => Set<Blindmesh.Domain.Moderation.DisputeEvidence>();
+
+    public DbSet<Blindmesh.Domain.Moderation.ModeratorAssignment> ModeratorAssignments => Set<Blindmesh.Domain.Moderation.ModeratorAssignment>();
+
+    public DbSet<Blindmesh.Domain.Moderation.ModerationAudit> ModerationAudit => Set<Blindmesh.Domain.Moderation.ModerationAudit>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OutboxMessageEntity>(entity =>
@@ -139,5 +152,9 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // The tables of the findings module. They are owned by the findings
         // package and are not changed by any other module.
         modelBuilder.ApplyFindingsModel();
+
+        // The tables of the moderation module. They are owned by the moderation
+        // package and are not changed by any other module.
+        modelBuilder.ApplyModerationModel();
     }
 }

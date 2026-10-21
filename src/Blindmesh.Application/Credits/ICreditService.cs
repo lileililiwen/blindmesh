@@ -75,4 +75,26 @@ public interface ICreditService
         CreditActor actor,
         CreditRefundCommand command,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Moves the pending credits of a disputed seat to the contributor that
+    /// did the work, or back to the publisher that owns the task. The reserved
+    /// escrow of the publisher is never touched. The command is internal: it is
+    /// called by the package that owns the dispute, inside the transaction of
+    /// that caller.
+    /// </summary>
+    Task<CreditCommandResult> ArbitrateAsync(
+        CreditActor actor,
+        CreditArbitrationCommand command,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Compensates an arbitration after an appeal. It writes new, balanced
+    /// entries that move the amount back. It never touches an entry of an
+    /// earlier transaction.
+    /// </summary>
+    Task<CreditCommandResult> CompensateArbitrationAsync(
+        CreditActor actor,
+        CreditCompensationCommand command,
+        CancellationToken cancellationToken);
 }

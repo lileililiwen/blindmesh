@@ -4,7 +4,7 @@ Find what you couldn't see. Build alone, test together.
 
 Blindmesh is a mutual testing platform for independent developers. Contributors earn internal Credits for useful testing and spend them on exploration, directed verification, and authorized resource collaboration.
 
-**Status: the runtime foundation, the identity package, the project package, the capability package, the credit package, the task publication package, the participation execution package and the evidence package run.** The API, the worker, the PostgreSQL schema, the generated API client, the web application, the GitHub sign in, the public contributor profile, the project workspaces with their visibility and membership, the capability directory with its eligibility evaluation, the wallet with the conserved credit balances and the limited grant, the task marketplace with the publication that reserves the whole budget of a task before it opens, the seat of a contributor with its application, its lease, its start and its deadlines, and the evidence of a finished seat with its private files, its findings and its settlement are implemented, built and tested. The remaining marketplace features (moderation, reputation, notifications, pilot operations) are still specified, not implemented. See [HANDOFF](HANDOFF.md) for the actual evidence and the remaining boundaries.
+**Status: the runtime foundation, the identity package, the project package, the capability package, the credit package, the task publication package, the participation execution package, the evidence package and the moderation package run.** The API, the worker, the PostgreSQL schema, the generated API client, the web application, the GitHub sign in, the public contributor profile, the project workspaces with their visibility and membership, the capability directory with its eligibility evaluation, the wallet with the conserved credit balances and the limited grant, the task marketplace with the publication that reserves the whole budget of a task before it opens, the seat of a contributor with its application, its lease, its start and its deadlines, the evidence of a finished seat with its private files, its findings and its settlement, and the moderation of the reports and of the credit disputes with its reasoned decisions are implemented, built and tested. The remaining marketplace features (reputation, notifications, pilot operations) are still specified, not implemented. See [HANDOFF](HANDOFF.md) for the actual evidence and the remaining boundaries.
 
 ## Start here
 
@@ -60,6 +60,8 @@ npm --prefix apps/web run build
 npm --prefix apps/web run api:check
 npm --prefix apps/web run test:e2e -- --project=chromium --grep FOUND
 npm --prefix apps/web run test:a11y -- --grep FOUND
+npm --prefix apps/web run test:e2e -- --project=chromium --grep MOD
+npm --prefix apps/web run test:a11y -- --grep MOD
 python3 scripts/verify_bootstrap.py
 node scripts/check-openspec-change-names.mjs
 openspec validate --all --strict --no-interactive

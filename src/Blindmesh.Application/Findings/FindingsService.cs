@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Blindmesh.Application.Abstractions;
 using Blindmesh.Application.Credits;
+using Blindmesh.Application.Moderation;
 using Blindmesh.Application.Projects;
 using Blindmesh.Application.Tasks;
 using Blindmesh.Domain.Findings;
+using Blindmesh.Domain.Identity;
 using Blindmesh.Domain.Tasks;
 
 namespace Blindmesh.Application.Findings;
@@ -21,6 +23,7 @@ public sealed class FindingsService(
     ParticipationService participationService,
     ProjectService projects,
     ICreditService credits,
+    ModerationService moderation,
     IObjectStorage storage,
     IClock clock)
 {
@@ -612,70 +615,65 @@ public sealed class FindingsService(
                 $"The reason of a dispute holds 1 to {SubmissionRules.DisputeReasonMaxLength} characters.");
         }
 
-        var found = await store.FindSubmissionAsync(submissionId, cancellationToken);
+        // The dispute is opened by the moderation module. Both routes of the
+        // product reach the same state machine, and only one case may be open
+        // for a submission.
+        var opened = await moderation.OpenDisputeAsync(
+            new ModerationActor(actor.UserId, actor.Username, UserRole.User),
+            submissionId,
+            new OpenDisputeInput(reason, input.ExpectedVersion),
+            cancellationToken);
 
-        if (found is null)
+        if (opened.Status == ModerationCommandStatus.NotFound
+            || opened.Status == ModerationCommandStatus.Forbidden)
         {
             return NotFound();
         }
 
-        var task = await tasks.LockTaskAsync(found.TaskId, cancellationToken);
-
-        if (task is null)
+        if (opened.Status == ModerationCommandStatus.ValidationFailed)
         {
-            return NotFound();
+            return ValidationFailed(
+                "reason",
+                opened.Message ?? $"The reason of a dispute holds 1 to {SubmissionRules.DisputeReasonMaxLength} characters.");
         }
 
-        var access = await projects.GetAccessAsync(ToProjectActor(actor), found.ProjectId, cancellationToken);
-
-        if (access is null)
+        if (opened.Status == ModerationCommandStatus.VersionConflict)
         {
-            return NotFound();
+            return new FindingsCommandResult(
+                FindingsCommandStatus.VersionConflict,
+                CurrentVersion: opened.CurrentVersion,
+                Message: "The evidence was changed somewhere else.");
         }
 
-        if (!MayReview(actor, found, task, access))
+        if (opened.Status == ModerationCommandStatus.StateConflict)
         {
-            return NotFound();
+            return StateConflict(opened.Message ?? "The evidence of this seat does not wait for a dispute.");
         }
 
-        var participation = await participations.LockParticipationAsync(found.ParticipationId, cancellationToken);
-
-        if (participation is null)
+        if (opened.Status is not (ModerationCommandStatus.Created or ModerationCommandStatus.Succeeded))
         {
-            return NotFound();
+            return new FindingsCommandResult(
+                FindingsCommandStatus.Unavailable,
+                Message: opened.Message ?? "The dispute could not be opened.");
         }
 
-        var slot = participation.SlotId is Guid slotId
-            ? await tasks.LockSlotAsync(slotId, cancellationToken)
-            : null;
-
-        var submission = await store.LockSubmissionAsync(found.Id, cancellationToken);
+        var submission = await store.FindSubmissionAsync(submissionId, cancellationToken);
 
         if (submission is null)
         {
             return NotFound();
         }
 
-        if (submission.State is not (SubmissionState.Submitted or SubmissionState.ChangesRequested))
+        var task = await tasks.FindTaskAsync(submission.TaskId, cancellationToken);
+
+        if (task is null)
         {
-            return StateConflict("The evidence of this seat does not wait for a dispute.");
+            return NotFound();
         }
 
-        if (input.ExpectedVersion is int expected && expected != submission.Version)
-        {
-            return new FindingsCommandResult(
-                FindingsCommandStatus.VersionConflict,
-                CurrentVersion: submission.Version,
-                Message: "The evidence was changed somewhere else.");
-        }
+        var detail = await BuildDetailAsync(submission, task, actor, cancellationToken);
 
-        return await DisputeCoreAsync(
-            participation,
-            submission,
-            task,
-            slot,
-            reason,
-            cancellationToken);
+        return new FindingsCommandResult(FindingsCommandStatus.Succeeded, Submission: detail);
     }
 
     /// <summary>
@@ -1245,15 +1243,13 @@ public sealed class FindingsService(
                 continue;
             }
 
-            var result = await DisputeCoreAsync(
-                participation,
-                submission,
-                task,
-                slot,
-                "The correction of the contributor was not sent in time.",
+            var result = await moderation.OpenDisputeAsync(
+                new ModerationActor(Guid.Empty, "system", UserRole.Moderator),
+                candidate.Id,
+                new OpenDisputeInput("The correction of the contributor was not sent in time."),
                 cancellationToken);
 
-            if (result.Status == FindingsCommandStatus.Succeeded)
+            if (result.Status is ModerationCommandStatus.Created or ModerationCommandStatus.Succeeded)
             {
                 disputed += 1;
             }
@@ -1375,66 +1371,6 @@ public sealed class FindingsService(
         await participationService.RecomputeTaskStatusAsync(task, cancellationToken);
 
         var detail = await BuildDetailAsync(submission, task, actor, cancellationToken);
-
-        return new FindingsCommandResult(FindingsCommandStatus.Succeeded, Submission: detail);
-    }
-
-    /// <summary>
-    /// The dispute about the completion of a seat. The funds wait for the
-    /// arbitration of another package, so no credit moves here.
-    /// </summary>
-    private async Task<FindingsCommandResult> DisputeCoreAsync(
-        Participation participation,
-        Submission submission,
-        MarketplaceTask task,
-        TaskSlot? slot,
-        string reason,
-        CancellationToken cancellationToken)
-    {
-        var now = clock.UtcNow;
-        var previousState = submission.State;
-        var previousParticipationState = participation.State;
-
-        submission.State = SubmissionState.Disputed;
-        submission.DisputeReason = reason;
-        submission.ReviewedAt = now;
-        submission.CorrectionDeadline = null;
-        submission.UpdatedAt = now;
-        submission.Version += 1;
-
-        await store.AddStatusChangeAsync(new SubmissionStatusChange
-        {
-            Id = Guid.NewGuid(),
-            SubmissionId = submission.Id,
-            FromStatus = StateText(previousState),
-            ToStatus = StateText(SubmissionState.Disputed),
-            ChangedBy = task.OwnerId,
-            ChangedAt = now,
-        }, cancellationToken);
-
-        participation.State = ParticipationState.Disputed;
-        participation.UpdatedAt = now;
-        participation.Version += 1;
-
-        await participations.AddStatusChangeAsync(new ParticipationStatusChange
-        {
-            Id = Guid.NewGuid(),
-            ParticipationId = participation.Id,
-            FromStatus = ParticipationService.ParticipationStateText(previousParticipationState),
-            ToStatus = ParticipationService.ParticipationStateText(ParticipationState.Disputed),
-            ChangedBy = task.OwnerId,
-            ChangedAt = now,
-        }, cancellationToken);
-
-        if (slot is not null)
-        {
-            slot.State = TaskSlotState.Disputed;
-        }
-
-        await store.SaveChangesAsync(cancellationToken);
-        await participationService.RecomputeTaskStatusAsync(task, cancellationToken);
-
-        var detail = await BuildDetailAsync(submission, task, SystemActor(), cancellationToken);
 
         return new FindingsCommandResult(FindingsCommandStatus.Succeeded, Submission: detail);
     }

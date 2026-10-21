@@ -32,7 +32,7 @@ public static class FindingsModelConfiguration
             entity.Property(submission => submission.SubmittedAt).HasColumnName("submitted_at").HasColumnType("timestamptz");
             entity.Property(submission => submission.ReviewedAt).HasColumnName("reviewed_at").HasColumnType("timestamptz");
             entity.Property(submission => submission.CorrectionRequestedAt).HasColumnName("correction_requested_at").HasColumnType("timestamptz");
-            entity.Property(submission => submission.DisputeReason).HasColumnName("dispute_reason").HasMaxLength(2000);
+            entity.Property(submission => submission.DisputeReason).HasColumnName("dispute_reason").HasMaxLength(5000);
             entity.Property(submission => submission.CorrectionDeadline).HasColumnName("correction_deadline").HasColumnType("timestamptz");
             entity.Property(submission => submission.BonusGranted).HasColumnName("bonus_granted").IsRequired();
             entity.Property(submission => submission.SettledCredits).HasColumnName("settled_credits").IsRequired();

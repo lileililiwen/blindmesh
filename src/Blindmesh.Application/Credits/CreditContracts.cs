@@ -149,6 +149,32 @@ public sealed record CreditPendingCommand(
 public sealed record CreditSettleCommand(string Reference, long Amount, string? IdempotencyKey = null);
 
 /// <summary>
+/// The command of an arbitration. It moves the pending credits of a seat to
+/// the contributor that did the work, or back to the publisher that owns the
+/// task. The lot it creates keeps the reference of the seat, so that a later
+/// appeal can compensate exactly that lot.
+/// </summary>
+public sealed record CreditArbitrationCommand(
+    string Reference,
+    long Amount,
+    Guid ContributorId,
+    Guid PublisherId,
+    bool AwardToContributor,
+    string? IdempotencyKey = null);
+
+/// <summary>
+/// The command that compensates an arbitration after an appeal. It never
+/// touches an entry of an earlier transaction: it writes new, balanced
+/// entries that move the amount back.
+/// </summary>
+public sealed record CreditCompensationCommand(
+    string Reference,
+    long Amount,
+    Guid ContributorId,
+    Guid PublisherId,
+    string? IdempotencyKey = null);
+
+/// <summary>
 /// The command that returns the reserved credits of a publisher. An expired
 /// grant goes to the expiry sink instead of back to the publisher.
 /// </summary>

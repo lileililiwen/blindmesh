@@ -99,6 +99,21 @@ export type AttachmentViewResponse =
 export type AttachmentDownloadResponse =
   paths["/v1/attachments/{id}/download"]["get"]["responses"][200]["content"]["application/json"];
 
+export type ReportReceiptResponse =
+  paths["/v1/reports"]["post"]["responses"][201]["content"]["application/json"];
+
+export type ReportViewResponse =
+  paths["/v1/admin/reports"]["get"]["responses"][200]["content"]["application/json"][number];
+
+export type DisputeViewResponse =
+  paths["/v1/disputes/{id}"]["get"]["responses"][200]["content"]["application/json"];
+
+export type DisputeSummaryResponse =
+  paths["/v1/admin/disputes"]["get"]["responses"][200]["content"]["application/json"][number];
+
+export type BanViewResponse =
+  paths["/v1/admin/users/{id}/ban"]["post"]["responses"][200]["content"]["application/json"];
+
 /** The body of the evidence of a seat. It holds no credential. */
 export type SubmitEvidenceBody = Partial<
   paths["/v1/participations/{id}/submissions"]["post"]["requestBody"]["content"]["application/json"]
@@ -127,6 +142,41 @@ export type PatchFindingBody = Partial<
 /** The body of the declaration of a private file of the evidence. */
 export type AttachmentIntentBody = Partial<
   paths["/v1/attachments/intents"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of a report of abusive content. It holds no credential. */
+export type CreateReportBody = Partial<
+  paths["/v1/reports"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the opening of a case of arbitration. */
+export type OpenDisputeBody = Partial<
+  paths["/v1/submissions/{id}/disputes"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the appeal of a decision of a case. */
+export type AppealDisputeBody = Partial<
+  paths["/v1/disputes/{id}/appeal"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the request of more evidence of a case. */
+export type RequestEvidenceBody = Partial<
+  paths["/v1/admin/disputes/{id}/request-evidence"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the decision of a case. */
+export type ResolveDisputeBody = Partial<
+  paths["/v1/admin/disputes/{id}/resolve"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the closing of a case. */
+export type CloseDisputeBody = Partial<
+  paths["/v1/admin/disputes/{id}/close"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the ban of an account. */
+export type BanUserBody = Partial<
+  paths["/v1/admin/users/{id}/ban"]["post"]["requestBody"]["content"]["application/json"]
 >;
 
 /** The body of an application for a slot of a task. It holds no credential. */
@@ -440,6 +490,62 @@ export type BlindmeshClient = {
   ): Promise<ClientResult<AttachmentViewResponse>>;
   /** Signs the short address of a private file of the evidence. */
   downloadAttachment(id: string): Promise<ClientResult<AttachmentDownloadResponse>>;
+  /** Writes a report of abusive content and reads the receipt of it back. */
+  createReport(
+    body: CreateReportBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<ReportReceiptResponse>>;
+  /** Reads the receipt of a report of the reporter. */
+  getReport(id: string): Promise<ClientResult<ReportReceiptResponse>>;
+  /** Lists the reports of the moderation staff. */
+  listReports(): Promise<ClientResult<ReportViewResponse[]>>;
+  /** Opens the case of arbitration of a seat and freezes its settlement. */
+  openDispute(
+    submissionId: string,
+    body: OpenDisputeBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<DisputeViewResponse>>;
+  /** Reads the case of an arbitration with its trail. */
+  getDispute(id: string): Promise<ClientResult<DisputeViewResponse>>;
+  /** Lists the cases of the moderation staff. */
+  listDisputes(): Promise<ClientResult<DisputeSummaryResponse[]>>;
+  /** Asks the parties of a case for more evidence. */
+  requestDisputeEvidence(
+    id: string,
+    body: RequestEvidenceBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<DisputeViewResponse>>;
+  /** Decides a case and moves the escrow of the seat. */
+  resolveDispute(
+    id: string,
+    body: ResolveDisputeBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<DisputeViewResponse>>;
+  /** Closes a case whose decision stands. */
+  closeDispute(
+    id: string,
+    body: CloseDisputeBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<DisputeViewResponse>>;
+  /** Appeals the decision of a case once. */
+  appealDispute(
+    id: string,
+    body: AppealDisputeBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<DisputeViewResponse>>;
+  /** Bans an account and refuses its requests. */
+  banUser(
+    id: string,
+    body: BanUserBody,
+    csrfToken: string,
+    idempotencyKey: string,
+  ): Promise<ClientResult<BanViewResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -948,5 +1054,86 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
     },
     downloadAttachment: (id) =>
       request<AttachmentDownloadResponse>(`/attachments/${encodeURIComponent(id)}/download`, { cache: "no-store" }),
+    createReport: (body, csrfToken, idempotencyKey) =>
+      request<ReportReceiptResponse>("/reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    getReport: (id) => request<ReportReceiptResponse>(`/reports/${encodeURIComponent(id)}`, { cache: "no-store" }),
+    listReports: () => request<ReportViewResponse[]>("/admin/reports", { cache: "no-store" }),
+    openDispute: (submissionId, body, csrfToken, idempotencyKey) =>
+      request<DisputeViewResponse>(`/submissions/${encodeURIComponent(submissionId)}/disputes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    getDispute: (id) => request<DisputeViewResponse>(`/disputes/${encodeURIComponent(id)}`, { cache: "no-store" }),
+    listDisputes: () => request<DisputeSummaryResponse[]>("/admin/disputes", { cache: "no-store" }),
+    requestDisputeEvidence: (id, body, csrfToken, idempotencyKey) =>
+      request<DisputeViewResponse>(`/admin/disputes/${encodeURIComponent(id)}/request-evidence`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    resolveDispute: (id, body, csrfToken, idempotencyKey) =>
+      request<DisputeViewResponse>(`/admin/disputes/${encodeURIComponent(id)}/resolve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    closeDispute: (id, body, csrfToken, idempotencyKey) =>
+      request<DisputeViewResponse>(`/admin/disputes/${encodeURIComponent(id)}/close`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    appealDispute: (id, body, csrfToken, idempotencyKey) =>
+      request<DisputeViewResponse>(`/disputes/${encodeURIComponent(id)}/appeal`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
+    banUser: (id, body, csrfToken, idempotencyKey) =>
+      request<BanViewResponse>(`/admin/users/${encodeURIComponent(id)}/ban`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...withCsrf(csrfToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
   };
 }

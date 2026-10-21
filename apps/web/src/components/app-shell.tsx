@@ -22,6 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const signedIn = state.kind === "authenticated";
   const user = signedIn ? state.user : null;
+  const staff = user?.role === "moderator" || user?.role === "administrator";
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -140,6 +141,37 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         Profile settings
                       </Link>
                     </li>
+                    <li>
+                      <Link
+                        href="/reports/new"
+                        aria-current={pathname.startsWith("/reports") ? "page" : undefined}
+                        className="text-small underline underline-offset-4"
+                      >
+                        Report content
+                      </Link>
+                    </li>
+                    {staff ? (
+                      <>
+                        <li>
+                          <Link
+                            href="/admin/reports"
+                            aria-current={pathname === "/admin/reports" ? "page" : undefined}
+                            className="text-small underline underline-offset-4"
+                          >
+                            The reports
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/admin/disputes"
+                            aria-current={pathname === "/admin/disputes" ? "page" : undefined}
+                            className="text-small underline underline-offset-4"
+                          >
+                            The cases
+                          </Link>
+                        </li>
+                      </>
+                    ) : null}
                     <li>
                       <Button
                         type="button"

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "requirements.md",
-  "selected": "moderation-arbitration",
+  "selected": "reputation-history",
   "changes": [
     {
       "id": "runtime-foundation",
@@ -98,8 +98,8 @@
         "evidence-findings"
       ],
       "requirement_prefix": "MOD",
-      "status": "proposed",
-      "readiness": "next-in-order",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-21",
       "module": "src/Blindmesh.Domain/Moderation, src/Blindmesh.Application/Moderation, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {
@@ -110,7 +110,7 @@
       ],
       "requirement_prefix": "REP",
       "status": "proposed",
-      "readiness": "implementation-ready-after-prerequisites",
+      "readiness": "next-in-order",
       "module": "src/Blindmesh.Domain/Reputation, src/Blindmesh.Application/Reputation, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {

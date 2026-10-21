@@ -21,6 +21,12 @@
     <ProjectReference Include="..\..\src\Blindmesh.Api\Blindmesh.Api.csproj" />
     <ProjectReference Include="..\..\src\Blindmesh.Application\Blindmesh.Application.csproj" />
     <ProjectReference Include="..\..\src\Blindmesh.Infrastructure\Blindmesh.Infrastructure.csproj" />
+
+    <!-- The worker of the product owns the consumer of the outbox. The tests
+         of the reputation register the real handlers and the real claim cycle,
+         so the effect of an event is produced by the code that runs in
+         production and not by a stand in of the test. -->
+    <ProjectReference Include="..\..\src\Blindmesh.Worker\Blindmesh.Worker.csproj" />
   </ItemGroup>
 
   <ItemGroup>

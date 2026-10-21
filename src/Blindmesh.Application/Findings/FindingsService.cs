@@ -6,6 +6,7 @@ using Blindmesh.Application.Projects;
 using Blindmesh.Application.Tasks;
 using Blindmesh.Domain.Findings;
 using Blindmesh.Domain.Identity;
+using Blindmesh.Domain.Shared;
 using Blindmesh.Domain.Tasks;
 
 namespace Blindmesh.Application.Findings;
@@ -25,6 +26,7 @@ public sealed class FindingsService(
     ICreditService credits,
     ModerationService moderation,
     IObjectStorage storage,
+    IOutboxWriter outbox,
     IClock clock)
 {
     /// <summary>The number of submissions one sweep of the deadlines touches.</summary>
@@ -787,6 +789,33 @@ public sealed class FindingsService(
             ChangedAt = now,
         }, cancellationToken);
 
+        if (target == FindingState.Confirmed)
+        {
+            // The finding is confirmed. The event is written inside the
+            // transaction of the command, so the decision and its event are
+            // stored together or not at all.
+            await outbox.EnqueueAsync(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = FindingsEventTypes.FindingConfirmed,
+                Version = 1,
+                ActorId = actor.UserId,
+                AggregateId = finding.Id,
+                OccurredAt = now,
+                Payload = JsonSerializer.Serialize(new FindingsEventPayload(
+                    Guid.Empty,
+                    submissionFound.Id,
+                    submissionFound.TaskId,
+                    submissionFound.ProjectId,
+                    finding.ContributorId,
+                    task.OwnerId,
+                    finding.Id,
+                    0,
+                    "confirmed_finding",
+                    now)),
+            }, cancellationToken);
+        }
+
         await store.SaveChangesAsync(cancellationToken);
 
         var view = await BuildFindingViewAsync(finding, cancellationToken);
@@ -1366,6 +1395,30 @@ public sealed class FindingsService(
         {
             slot.State = TaskSlotState.Settled;
         }
+
+        // The seat is finally accepted. The event is written inside the
+        // transaction of the command, so the outcome and its event are stored
+        // together or not at all.
+        await outbox.EnqueueAsync(new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = FindingsEventTypes.ParticipationAccepted,
+            Version = 1,
+            ActorId = actor.UserId,
+            AggregateId = participation.Id,
+            OccurredAt = now,
+            Payload = JsonSerializer.Serialize(new FindingsEventPayload(
+                participation.Id,
+                submission.Id,
+                task.Id,
+                submission.ProjectId,
+                participation.ContributorId,
+                task.OwnerId,
+                null,
+                task.BaseReward + bonus,
+                "accepted_contribution",
+                now)),
+        }, cancellationToken);
 
         await store.SaveChangesAsync(cancellationToken);
         await participationService.RecomputeTaskStatusAsync(task, cancellationToken);

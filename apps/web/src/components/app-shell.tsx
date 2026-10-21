@@ -143,6 +143,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </li>
                     <li>
                       <Link
+                        href="/settings/reputation"
+                        aria-current={pathname === "/settings/reputation" ? "page" : undefined}
+                        className="text-small underline underline-offset-4"
+                      >
+                        Your reputation
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
                         href="/reports/new"
                         aria-current={pathname.startsWith("/reports") ? "page" : undefined}
                         className="text-small underline underline-offset-4"

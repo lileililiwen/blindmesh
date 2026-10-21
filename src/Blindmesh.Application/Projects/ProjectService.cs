@@ -124,6 +124,27 @@ public sealed class ProjectService(IProjectStore store, IClock clock)
     }
 
     /// <summary>
+    /// The reference of a project for a reader. It is null when the actor may
+    /// not see the project, so the title of a private project never reaches a
+    /// reader that may not read it. The modules that keep the visibility of a
+    /// child object read the visibility of the project through this answer.
+    /// </summary>
+    public async Task<ProjectReferenceView?> GetReferenceAsync(
+        ProjectActor actor,
+        Guid projectId,
+        CancellationToken cancellationToken)
+    {
+        var access = await LoadAsync(actor, projectId, cancellationToken);
+
+        if (access is null)
+        {
+            return null;
+        }
+
+        return new ProjectReferenceView(access.Project.Id, access.Project.Name);
+    }
+
+    /// <summary>
     /// Creates a project in the draft state. The owner of a new project is the
     /// actor; the owner is the only member manager of the project.
     /// </summary>

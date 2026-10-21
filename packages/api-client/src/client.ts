@@ -114,6 +114,17 @@ export type DisputeSummaryResponse =
 export type BanViewResponse =
   paths["/v1/admin/users/{id}/ban"]["post"]["responses"][200]["content"]["application/json"];
 
+export type ReputationSummaryResponse =
+  paths["/v1/people/{username}/reputation"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ReputationHistoryResponse =
+  paths["/v1/people/{username}/reputation/history"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ReputationOwnHistoryResponse =
+  paths["/v1/reputation/history"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ReputationEventResponse = ReputationHistoryResponse["events"][number];
+
 /** The body of the evidence of a seat. It holds no credential. */
 export type SubmitEvidenceBody = Partial<
   paths["/v1/participations/{id}/submissions"]["post"]["requestBody"]["content"]["application/json"]
@@ -546,6 +557,12 @@ export type BlindmeshClient = {
     csrfToken: string,
     idempotencyKey: string,
   ): Promise<ClientResult<BanViewResponse>>;
+  /** Reads the public reputation summary of a contributor. */
+  getPublicReputation(username: string): Promise<ClientResult<ReputationSummaryResponse>>;
+  /** Reads the public history of the reputation of a contributor. */
+  getPublicReputationHistory(username: string): Promise<ClientResult<ReputationHistoryResponse>>;
+  /** Reads the own history of the reputation of the signed in contributor. */
+  getOwnReputationHistory(): Promise<ClientResult<ReputationOwnHistoryResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -1135,5 +1152,14 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
         body: JSON.stringify(body),
         cache: "no-store",
       }),
+    getPublicReputation: (username) =>
+      request<ReputationSummaryResponse>(`/people/${encodeURIComponent(username)}/reputation`, {
+        cache: "no-store",
+      }),
+    getPublicReputationHistory: (username) =>
+      request<ReputationHistoryResponse>(`/people/${encodeURIComponent(username)}/reputation/history`, {
+        cache: "no-store",
+      }),
+    getOwnReputationHistory: () => request<ReputationOwnHistoryResponse>("/reputation/history", { cache: "no-store" }),
   };
 }

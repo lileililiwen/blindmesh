@@ -3,7 +3,9 @@ using Blindmesh.Infrastructure.Capabilities;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Credits;
 using Blindmesh.Infrastructure.Findings;
+using Blindmesh.Infrastructure.Moderation;
 using Blindmesh.Infrastructure.Projects;
+using Blindmesh.Infrastructure.Reputation;
 using Blindmesh.Infrastructure.Tasks;
 using Blindmesh.Worker;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,8 +24,20 @@ builder.Services.AddBlindmeshCapabilities();
 builder.Services.AddBlindmeshCredits();
 builder.Services.AddBlindmeshTasks();
 builder.Services.AddBlindmeshFindings();
+// The findings module settles a seat through the moderation module, so the
+// worker registers it. Without it the review deadline cycle cannot resolve
+// the service and fails every cycle.
+builder.Services.AddBlindmeshModeration();
+builder.Services.AddBlindmeshReputation();
 
 builder.Services.AddSingleton<IOutboxHandler, RuntimeHeartbeatHandler>();
+
+// The handlers of the reputation module are scoped, so they share the scoped
+// database context and the transaction of the cycle that claimed the message.
+builder.Services.AddScoped<IOutboxHandler, ParticipationAcceptedReputationHandler>();
+builder.Services.AddScoped<IOutboxHandler, FindingConfirmedReputationHandler>();
+builder.Services.AddScoped<IOutboxHandler, ArbitrationReversedReputationHandler>();
+
 builder.Services.AddHostedService<OutboxClaimService>();
 builder.Services.AddHostedService<ParticipationDeadlineService>();
 builder.Services.AddHostedService<ReviewDeadlineService>();

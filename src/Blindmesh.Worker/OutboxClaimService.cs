@@ -57,6 +57,8 @@ public sealed class OutboxClaimService(
 
         var messages = await repository.ClaimPendingAsync(20, cancellationToken);
 
+        var applied = 0;
+
         foreach (var message in messages)
         {
             if (!handlers.TryGetValue(message.Type, out var handler))
@@ -85,6 +87,7 @@ public sealed class OutboxClaimService(
                     cancellationToken);
 
                 await repository.MarkProcessedAsync(message, DateTimeOffset.UtcNow, cancellationToken);
+                applied += 1;
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
@@ -95,6 +98,9 @@ public sealed class OutboxClaimService(
 
         await transaction.CommitAsync(cancellationToken);
 
-        return messages.Count;
+        // Only the messages that were really applied count. A message without a
+        // handler stays pending, and counting it would keep the cycle busy for
+        // ever while it waits for the package that will consume it.
+        return applied;
     }
 }

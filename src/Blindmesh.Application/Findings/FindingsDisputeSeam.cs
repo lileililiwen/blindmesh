@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Blindmesh.Application.Abstractions;
 using Blindmesh.Application.Tasks;
 using Blindmesh.Domain.Findings;
+using Blindmesh.Domain.Shared;
 using Blindmesh.Domain.Tasks;
 
 namespace Blindmesh.Application.Findings;
@@ -15,6 +17,7 @@ public sealed class FindingsDisputeSeam(
     ITaskStore tasks,
     IParticipationStore participations,
     ParticipationService participationService,
+    IOutboxWriter outbox,
     IClock clock) : IFindingsDisputeSeam
 {
     public async Task<DisputeSeatLock?> LockSeatAsync(
@@ -171,6 +174,35 @@ public sealed class FindingsDisputeSeam(
         {
             await participations.ReleaseLeaseAsync(leaseId, now, cancellationToken);
             participation.LeaseId = null;
+        }
+
+        if (accepted)
+        {
+            // The arbitration accepted the seat, so the seat is finally
+            // accepted. The event is written inside the transaction of the
+            // command of the moderation module, so the decision and its event
+            // are stored together or not at all. The amount of the seat is
+            // decided by the credit module, so the event names none.
+            await outbox.EnqueueAsync(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = FindingsEventTypes.ParticipationAccepted,
+                Version = 1,
+                ActorId = changedBy,
+                AggregateId = participation.Id,
+                OccurredAt = now,
+                Payload = JsonSerializer.Serialize(new FindingsEventPayload(
+                    participation.Id,
+                    submission.Id,
+                    seat.Task.Id,
+                    submission.ProjectId,
+                    participation.ContributorId,
+                    seat.Task.OwnerId,
+                    null,
+                    0,
+                    "accepted_contribution",
+                    now)),
+            }, cancellationToken);
         }
 
         await store.SaveChangesAsync(cancellationToken);

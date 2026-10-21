@@ -1,6 +1,6 @@
 # Delivery roadmap
 
-The runtime foundation, the identity package, the project package, the capability package, the credit package, the task publication package, the participation execution package, the evidence package and the moderation package are implemented, verified and archived. The changes below that are not archived yet are proposed, unimplemented and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
+The runtime foundation, the identity package, the project package, the capability package, the credit package, the task publication package, the participation execution package, the evidence package, the moderation package and the reputation package are implemented, verified and archived. The changes below that are not archived yet are proposed, unimplemented and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
 
 | Order | Target | Change | Independently accepted outcome |
 |---|---|---|---|
@@ -13,7 +13,7 @@ The runtime foundation, the identity package, the project package, the capabilit
 | 7 | v0.2 execution | participation-execution (archived) | Qualified contributors apply, occupy independent slots, start, and withdraw safely |
 | 8 | v0.2 feedback | evidence-findings (archived) | Contributors submit protected evidence; owners review and settle work |
 | 9 | v0.3 safety | moderation-arbitration (archived) | Reports and payment disputes reach auditable moderator decisions |
-| 10 | v0.3 trust | reputation-history | Completed contributions produce non-purchasable, explainable reputation |
+| 10 | v0.3 trust | reputation-history (archived) | Completed contributions produce non-purchasable, explainable reputation |
 | 11 | v0.3 communication | notification-delivery | In-app and SMTP notifications survive retries without leaking private content |
 | 12 | v0.4 pilot | pilot-operations | Operator rehearses deploy, rollback, backup/restore, and measured pilot release gates |
 

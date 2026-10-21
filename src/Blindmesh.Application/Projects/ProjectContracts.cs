@@ -25,6 +25,16 @@ public sealed record ProjectAccessView(
     string Visibility,
     string Status);
 
+/// <summary>
+/// The reference of a project for a reader. It is the smallest answer of the
+/// project module about the visibility of a project: it exists only when the
+/// reader may read the project, so the title of a private project never
+/// reaches a reader that may not read it.
+/// </summary>
+public sealed record ProjectReferenceView(
+    Guid Id,
+    string Name);
+
 /// <summary>One project of the list of visible projects.</summary>
 public sealed record ProjectSummaryView(
     Guid Id,

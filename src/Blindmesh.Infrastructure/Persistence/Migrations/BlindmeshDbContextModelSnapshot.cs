@@ -1668,6 +1668,144 @@ namespace Blindmesh.Infrastructure.Persistence.Migrations
                     b.ToTable("project_versions", (string)null);
                 });
 
+            modelBuilder.Entity("Blindmesh.Domain.Reputation.ReputationEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("category");
+
+                    b.Property<int>("Delta")
+                        .HasColumnType("integer")
+                        .HasColumnName("delta");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("note");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<Guid>("SourceEventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_event_id");
+
+                    b.Property<Guid?>("SourceFindingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_finding_id");
+
+                    b.Property<Guid?>("SourceParticipationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_participation_id");
+
+                    b.Property<Guid?>("SourceProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_project_id");
+
+                    b.Property<Guid?>("SourceSubmissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_submission_id");
+
+                    b.Property<Guid?>("SourceTaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_task_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceEventId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_reputation_events_source_event_id");
+
+                    b.HasIndex("UserId", "OccurredAt")
+                        .HasDatabaseName("ix_reputation_events_user_id_occurred_at");
+
+                    b.ToTable("reputation_events", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Reputation.ReputationScore", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<int>("AcceptedContributions")
+                        .HasColumnType("integer")
+                        .HasColumnName("accepted_contributions");
+
+                    b.Property<int>("ConfirmedFindings")
+                        .HasColumnType("integer")
+                        .HasColumnName("confirmed_findings");
+
+                    b.Property<int>("CurrentScore")
+                        .HasColumnType("integer")
+                        .HasColumnName("current_score");
+
+                    b.Property<int>("ReversedContributions")
+                        .HasColumnType("integer")
+                        .HasColumnName("reversed_contributions");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("reputation_scores", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Reputation.ReputationSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AcceptedContributions")
+                        .HasColumnType("integer")
+                        .HasColumnName("accepted_contributions");
+
+                    b.Property<int>("ConfirmedFindings")
+                        .HasColumnType("integer")
+                        .HasColumnName("confirmed_findings");
+
+                    b.Property<int>("CurrentScore")
+                        .HasColumnType("integer")
+                        .HasColumnName("current_score");
+
+                    b.Property<int>("ReversedContributions")
+                        .HasColumnType("integer")
+                        .HasColumnName("reversed_contributions");
+
+                    b.Property<DateTimeOffset>("TakenAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("taken_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "TakenAt")
+                        .HasDatabaseName("ix_reputation_snapshots_user_id_taken_at");
+
+                    b.ToTable("reputation_snapshots", (string)null);
+                });
+
             modelBuilder.Entity("Blindmesh.Domain.Tasks.MarketplaceTask", b =>
                 {
                     b.Property<Guid>("Id")

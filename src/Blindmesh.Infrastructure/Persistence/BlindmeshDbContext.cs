@@ -9,6 +9,7 @@ using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Moderation;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Blindmesh.Infrastructure.Projects;
+using Blindmesh.Infrastructure.Reputation;
 using Blindmesh.Infrastructure.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -98,6 +99,12 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
 
     public DbSet<Blindmesh.Domain.Moderation.ModerationAudit> ModerationAudit => Set<Blindmesh.Domain.Moderation.ModerationAudit>();
 
+    public DbSet<Blindmesh.Domain.Reputation.ReputationEvent> ReputationEvents => Set<Blindmesh.Domain.Reputation.ReputationEvent>();
+
+    public DbSet<Blindmesh.Domain.Reputation.ReputationScore> ReputationScores => Set<Blindmesh.Domain.Reputation.ReputationScore>();
+
+    public DbSet<Blindmesh.Domain.Reputation.ReputationSnapshot> ReputationSnapshots => Set<Blindmesh.Domain.Reputation.ReputationSnapshot>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OutboxMessageEntity>(entity =>
@@ -156,5 +163,9 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // The tables of the moderation module. They are owned by the moderation
         // package and are not changed by any other module.
         modelBuilder.ApplyModerationModel();
+
+        // The tables of the reputation module. They are owned by the reputation
+        // package and are not changed by any other module.
+        modelBuilder.ApplyReputationModel();
     }
 }

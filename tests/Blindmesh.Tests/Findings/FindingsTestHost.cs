@@ -25,7 +25,12 @@ internal sealed class FindingsTestHost : IDisposable
 
     public FakeObjectStorage Storage { get; } = new();
 
-    public FindingsTestHost(RuntimeFixture fixture)
+    /// <summary>
+    /// The host of the tests. The optional callback adds services to the same
+    /// container the API runs in, so a package that owns a consumer of the
+    /// outbox registers it exactly like the worker of the product does.
+    /// </summary>
+    public FindingsTestHost(RuntimeFixture fixture, Action<IServiceCollection>? configureServices = null)
     {
         _host = new IdentityTestHost(
             fixture,
@@ -33,10 +38,18 @@ internal sealed class FindingsTestHost : IDisposable
             {
                 services.RemoveAll<IObjectStorage>();
                 services.AddSingleton<IObjectStorage>(Storage);
+
+                configureServices?.Invoke(services);
             });
     }
 
     public HttpClient Client => _host.Client;
+
+    /// <summary>
+    /// The services of the hosted API. A test that needs the worker of a
+    /// command resolves them from the same scope the request uses.
+    /// </summary>
+    public IServiceProvider Services => _host.Services;
 
     public Task<HttpResponseMessage> SignInAsync(string actor = "alice") => _host.SignInAsync(actor);
 

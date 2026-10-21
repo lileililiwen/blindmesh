@@ -539,6 +539,15 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )"
         }
       },
+      "blindmesh.worker": {
+        "type": "Project",
+        "dependencies": {
+          "Blindmesh.Application": "[1.0.0, )",
+          "Blindmesh.Domain": "[1.0.0, )",
+          "Blindmesh.Infrastructure": "[1.0.0, )",
+          "Microsoft.Extensions.Hosting": "[10.0.13, )"
+        }
+      },
       "AWSSDK.S3": {
         "type": "CentralTransitive",
         "requested": "[4.0.104.5, )",

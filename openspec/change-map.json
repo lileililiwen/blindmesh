@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "requirements.md",
-  "selected": "reputation-history",
+  "selected": "notification-delivery",
   "changes": [
     {
       "id": "runtime-foundation",
@@ -109,8 +109,8 @@
         "moderation-arbitration"
       ],
       "requirement_prefix": "REP",
-      "status": "proposed",
-      "readiness": "next-in-order",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-21",
       "module": "src/Blindmesh.Domain/Reputation, src/Blindmesh.Application/Reputation, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {
@@ -121,7 +121,7 @@
       ],
       "requirement_prefix": "NOTIF",
       "status": "proposed",
-      "readiness": "implementation-ready-after-prerequisites",
+      "readiness": "next-in-order",
       "module": "src/Blindmesh.Domain/Notifications, src/Blindmesh.Application/Notifications, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {

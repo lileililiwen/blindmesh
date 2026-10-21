@@ -927,6 +927,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/people/{username}/reputation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the public reputation summary of a contributor. */
+        get: operations["ReadPublicReputation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/people/{username}/reputation/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the public history of the reputation of a contributor. */
+        get: operations["ReadPublicReputationHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reputation/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the own history of the reputation of the signed in contributor. */
+        get: operations["ReadOwnReputationHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1470,6 +1521,50 @@ export interface components {
             created_at: string;
             /** Format: date-time */
             reviewed_at: null | string;
+        };
+        ReputationEventView: {
+            /** Format: uuid */
+            id: string;
+            category: string;
+            label: string;
+            /** Format: int32 */
+            delta: number | string;
+            /** Format: date-time */
+            occurred_at: string;
+            project_title: null | string;
+            /** Format: uuid */
+            task_id: null | string;
+            /** Format: uuid */
+            finding_id: null | string;
+            /** Format: uuid */
+            participation_id: null | string;
+        };
+        ReputationHistoryView: {
+            username: string;
+            /** Format: int32 */
+            current_score: number | string;
+            /** Format: int32 */
+            accepted_contributions: number | string;
+            /** Format: int32 */
+            confirmed_findings: number | string;
+            /** Format: int32 */
+            reversed_contributions: number | string;
+            /** Format: date-time */
+            updated_at: null | string;
+            events: components["schemas"]["ReputationEventView"][];
+        };
+        ReputationSummaryView: {
+            username: string;
+            /** Format: int32 */
+            current_score: number | string;
+            /** Format: int32 */
+            accepted_contributions: number | string;
+            /** Format: int32 */
+            confirmed_findings: number | string;
+            /** Format: int32 */
+            reversed_contributions: number | string;
+            /** Format: date-time */
+            updated_at: null | string;
         };
         RequestChangesBody: {
             note?: null | string;
@@ -5513,6 +5608,106 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ReadPublicReputation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReputationSummaryView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ReadPublicReputationHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReputationHistoryView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ReadOwnReputationHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReputationHistoryView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

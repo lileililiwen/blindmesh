@@ -29,6 +29,13 @@ public static class ModerationEventTypes
 
     public const string ArbitrationCompensated = "moderation.arbitration.compensated";
 
+    /// <summary>
+    /// The arbitration took an accepted contribution back from the
+    /// contributor. The event is written inside the transaction of the appeal,
+    /// next to the compensation of the award.
+    /// </summary>
+    public const string ArbitrationReversed = "moderation.arbitration.reversed";
+
     public const string AccountBanned = "moderation.account.banned";
 }
 
@@ -113,7 +120,9 @@ public sealed class ModerationService(
                 null,
                 null,
                 null,
-                now)),
+                now,
+                null,
+                0)),
         }, cancellationToken);
 
         return new ModerationCommandResult(
@@ -310,7 +319,9 @@ public sealed class ModerationService(
                 dispute.TaskId,
                 dispute.PublisherId,
                 dispute.ContributorId,
-                now)),
+                now,
+                dispute.ParticipationId,
+                0)),
         }, cancellationToken);
 
         return new ModerationCommandResult(
@@ -649,7 +660,32 @@ public sealed class ModerationService(
                     dispute.TaskId,
                     dispute.PublisherId,
                     dispute.ContributorId,
-                    now)),
+                    now,
+                    dispute.ParticipationId,
+                    awardedAmount)),
+            }, cancellationToken);
+
+            // The arbitration took the award back, so the accepted contribution
+            // of the seat no longer stands. The event is written inside the
+            // transaction of the appeal, next to the compensation of the award.
+            await outbox.EnqueueAsync(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = ModerationEventTypes.ArbitrationReversed,
+                Version = 1,
+                ActorId = actor.UserId,
+                AggregateId = dispute.ParticipationId,
+                OccurredAt = now,
+                Payload = JsonSerializer.Serialize(new ModerationEventPayload(
+                    dispute.Id,
+                    null,
+                    dispute.SubmissionId,
+                    dispute.TaskId,
+                    dispute.PublisherId,
+                    dispute.ContributorId,
+                    now,
+                    dispute.ParticipationId,
+                    awardedAmount)),
             }, cancellationToken);
 
             ledgerTransactionId = compensation.Transaction?.Id;
@@ -756,7 +792,9 @@ public sealed class ModerationService(
                 dispute.TaskId,
                 dispute.PublisherId,
                 dispute.ContributorId,
-                now)),
+                now,
+                dispute.ParticipationId,
+                0)),
         }, cancellationToken);
 
         return new ModerationCommandResult(
@@ -964,7 +1002,9 @@ public sealed class ModerationService(
                 dispute.TaskId,
                 dispute.PublisherId,
                 dispute.ContributorId,
-                now)),
+                now,
+                dispute.ParticipationId,
+                0)),
         }, cancellationToken);
 
         return new ModerationCommandResult(
@@ -1083,7 +1123,9 @@ public sealed class ModerationService(
                 null,
                 null,
                 userId,
-                now)),
+                now,
+                null,
+                0)),
         }, cancellationToken);
 
         return new ModerationCommandResult(
@@ -1260,4 +1302,6 @@ public sealed record ModerationEventPayload(
     Guid? TaskId,
     Guid? PublisherId,
     Guid? ContributorId,
-    DateTimeOffset OccurredAt);
+    DateTimeOffset OccurredAt,
+    Guid? ParticipationId,
+    long CompensatedAmount);

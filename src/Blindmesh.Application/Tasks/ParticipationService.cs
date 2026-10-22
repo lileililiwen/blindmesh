@@ -5,6 +5,7 @@ using Blindmesh.Application.Capabilities;
 using Blindmesh.Application.Contracts;
 using Blindmesh.Application.Credits;
 using Blindmesh.Application.Projects;
+using Blindmesh.Domain.Shared;
 using Blindmesh.Domain.Tasks;
 
 namespace Blindmesh.Application.Tasks;
@@ -22,6 +23,7 @@ public sealed class ParticipationService(
     ProjectService projects,
     CapabilityService capabilities,
     ICreditService credits,
+    IOutboxWriter outbox,
     IClock clock)
 {
     private const int SweepLimit = 50;
@@ -182,6 +184,26 @@ public sealed class ParticipationService(
             },
             cancellationToken);
 
+        // The owner of the task is told that a seat was applied for. The event
+        // is written inside the transaction of the command, so the application
+        // and its event are stored together or not at all.
+        await outbox.EnqueueAsync(new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = TasksEventTypes.ApplicationReceived,
+            Version = 1,
+            ActorId = actor.UserId,
+            AggregateId = participation.Id,
+            OccurredAt = now,
+            Payload = JsonSerializer.Serialize(new TasksEventPayload(
+                participation.Id,
+                task.Id,
+                task.ProjectId,
+                task.OwnerId,
+                participation.ContributorId,
+                now)),
+        }, cancellationToken);
+
         if (!await store.SaveChangesAsync(cancellationToken))
         {
             return Conflict();
@@ -306,6 +328,26 @@ public sealed class ParticipationService(
                 ChangedAt = now,
             },
             cancellationToken);
+
+        // The contributor is told that the seat was accepted. The event is
+        // written inside the transaction of the command, so the acceptance and
+        // its event are stored together or not at all.
+        await outbox.EnqueueAsync(new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = TasksEventTypes.ApplicationAccepted,
+            Version = 1,
+            ActorId = actor.UserId,
+            AggregateId = participation.Id,
+            OccurredAt = now,
+            Payload = JsonSerializer.Serialize(new TasksEventPayload(
+                participation.Id,
+                task.Id,
+                task.ProjectId,
+                task.OwnerId,
+                participation.ContributorId,
+                now)),
+        }, cancellationToken);
 
         if (!await store.SaveChangesAsync(cancellationToken))
         {

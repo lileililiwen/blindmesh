@@ -125,6 +125,20 @@ export type ReputationOwnHistoryResponse =
 
 export type ReputationEventResponse = ReputationHistoryResponse["events"][number];
 
+export type NotificationListResponse =
+  paths["/v1/notifications"]["get"]["responses"][200]["content"]["application/json"];
+
+export type NotificationResponse =
+  paths["/v1/notifications/{id}/read"]["post"]["responses"][200]["content"]["application/json"];
+
+export type NotificationPreferencesResponse =
+  paths["/v1/notification-preferences"]["get"]["responses"][200]["content"]["application/json"];
+
+/** The body of a change of the notification preferences. It holds no credential. */
+export type UpdateNotificationPreferencesBody = Partial<
+  paths["/v1/notification-preferences"]["patch"]["requestBody"]["content"]["application/json"]
+>;
+
 /** The body of the evidence of a seat. It holds no credential. */
 export type SubmitEvidenceBody = Partial<
   paths["/v1/participations/{id}/submissions"]["post"]["requestBody"]["content"]["application/json"]
@@ -563,6 +577,20 @@ export type BlindmeshClient = {
   getPublicReputationHistory(username: string): Promise<ClientResult<ReputationHistoryResponse>>;
   /** Reads the own history of the reputation of the signed in contributor. */
   getOwnReputationHistory(): Promise<ClientResult<ReputationOwnHistoryResponse>>;
+  /** Reads the notifications of the signed in contributor, the newest first. */
+  listNotifications(limit?: number, cursor?: string): Promise<ClientResult<NotificationListResponse>>;
+  /** Marks one notification of the signed in contributor as read. */
+  markNotificationRead(
+    id: string,
+    csrfToken: string,
+  ): Promise<ClientResult<NotificationResponse>>;
+  /** Reads the notification preferences of the signed in contributor. */
+  getNotificationPreferences(): Promise<ClientResult<NotificationPreferencesResponse>>;
+  /** Saves the notification preferences of the signed in contributor. */
+  updateNotificationPreferences(
+    body: UpdateNotificationPreferencesBody,
+    csrfToken: string,
+  ): Promise<ClientResult<NotificationPreferencesResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -1161,5 +1189,37 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
         cache: "no-store",
       }),
     getOwnReputationHistory: () => request<ReputationOwnHistoryResponse>("/reputation/history", { cache: "no-store" }),
+    listNotifications: (limit, cursor) => {
+      const query = new URLSearchParams();
+
+      if (limit !== undefined) {
+        query.set("limit", String(limit));
+      }
+
+      if (cursor) {
+        query.set("cursor", cursor);
+      }
+
+      const suffix = query.toString();
+
+      return request<NotificationListResponse>(`/notifications${suffix ? `?${suffix}` : ""}`, {
+        cache: "no-store",
+      });
+    },
+    markNotificationRead: (id, csrfToken) =>
+      request<NotificationResponse>(`/notifications/${encodeURIComponent(id)}/read`, {
+        method: "POST",
+        headers: { ...withCsrf(csrfToken) },
+        cache: "no-store",
+      }),
+    getNotificationPreferences: () =>
+      request<NotificationPreferencesResponse>("/notification-preferences", { cache: "no-store" }),
+    updateNotificationPreferences: (body, csrfToken) =>
+      request<NotificationPreferencesResponse>("/notification-preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }),
   };
 }

@@ -30,10 +30,14 @@ internal sealed class FindingsTestHost : IDisposable
     /// container the API runs in, so a package that owns a consumer of the
     /// outbox registers it exactly like the worker of the product does.
     /// </summary>
-    public FindingsTestHost(RuntimeFixture fixture, Action<IServiceCollection>? configureServices = null)
+    public FindingsTestHost(
+        RuntimeFixture fixture,
+        Action<IServiceCollection>? configureServices = null,
+        IDictionary<string, string?>? overrides = null)
     {
         _host = new IdentityTestHost(
             fixture,
+            overrides,
             configureServices: services =>
             {
                 services.RemoveAll<IObjectStorage>();

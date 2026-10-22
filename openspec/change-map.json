@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "requirements.md",
-  "selected": "notification-delivery",
+  "selected": "pilot-operations",
   "changes": [
     {
       "id": "runtime-foundation",
@@ -120,8 +120,8 @@
         "moderation-arbitration"
       ],
       "requirement_prefix": "NOTIF",
-      "status": "proposed",
-      "readiness": "next-in-order",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-22",
       "module": "src/Blindmesh.Domain/Notifications, src/Blindmesh.Application/Notifications, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     },
     {
@@ -133,7 +133,7 @@
       ],
       "requirement_prefix": "OPS",
       "status": "proposed",
-      "readiness": "implementation-ready-after-prerequisites",
+      "readiness": "next-in-order",
       "module": "src/Blindmesh.Domain/Operations, src/Blindmesh.Application/Operations, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     }
   ]

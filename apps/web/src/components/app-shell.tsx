@@ -143,11 +143,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </li>
                     <li>
                       <Link
+                        href="/notifications"
+                        aria-current={pathname.startsWith("/notifications") ? "page" : undefined}
+                        className="text-small underline underline-offset-4"
+                      >
+                        Notifications
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
                         href="/settings/reputation"
                         aria-current={pathname === "/settings/reputation" ? "page" : undefined}
                         className="text-small underline underline-offset-4"
                       >
                         Your reputation
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/settings/notifications"
+                        aria-current={pathname === "/settings/notifications" ? "page" : undefined}
+                        className="text-small underline underline-offset-4"
+                      >
+                        Notification preferences
                       </Link>
                     </li>
                     <li>

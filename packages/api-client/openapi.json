@@ -4307,6 +4307,199 @@
           }
         }
       }
+    },
+    "/v1/notifications": {
+      "get": {
+        "tags": [
+          "NotificationEndpoints"
+        ],
+        "summary": "List the notifications of the signed in contributor, the newest first.",
+        "operationId": "ListNotifications",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfNotificationView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/notifications/{id}/read": {
+      "post": {
+        "tags": [
+          "NotificationEndpoints"
+        ],
+        "summary": "Mark one notification of the signed in contributor as read.",
+        "operationId": "MarkNotificationRead",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/notification-preferences": {
+      "get": {
+        "tags": [
+          "NotificationEndpoints"
+        ],
+        "summary": "Read the notification preferences of the signed in contributor.",
+        "operationId": "ReadNotificationPreferences",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferenceView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "NotificationEndpoints"
+        ],
+        "summary": "Save the notification preferences of the signed in contributor.",
+        "operationId": "UpdateNotificationPreferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationPreferencesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferenceView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5621,6 +5814,74 @@
           }
         }
       },
+      "NotificationPreferenceView": {
+        "required": [
+          "in_app_enabled",
+          "email_enabled",
+          "updated_at"
+        ],
+        "type": "object",
+        "properties": {
+          "in_app_enabled": {
+            "type": "boolean"
+          },
+          "email_enabled": {
+            "type": "boolean"
+          },
+          "updated_at": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "NotificationView": {
+        "required": [
+          "id",
+          "category",
+          "label",
+          "summary",
+          "deep_link",
+          "is_read",
+          "created_at",
+          "read_at"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "deep_link": {
+            "type": "string"
+          },
+          "is_read": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read_at": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
       "PagedResultOfCapabilityView": {
         "required": [
           "items"
@@ -5631,6 +5892,26 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CapabilityView"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PagedResultOfNotificationView": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationView"
             }
           },
           "next_cursor": {
@@ -8002,6 +8283,23 @@
           }
         }
       },
+      "UpdateNotificationPreferencesRequest": {
+        "type": "object",
+        "properties": {
+          "in_app_enabled": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "email_enabled": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          }
+        }
+      },
       "UpdateProjectRequest": {
         "required": [
           "expected_version",
@@ -8106,6 +8404,9 @@
     },
     {
       "name": "ReputationEndpoints"
+    },
+    {
+      "name": "NotificationEndpoints"
     }
   ]
 }

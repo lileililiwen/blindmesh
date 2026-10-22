@@ -221,6 +221,30 @@ public sealed class FindingsService(
             slot.State = TaskSlotState.Submitted;
         }
 
+        // The owner of the task is told that the evidence arrived. The event is
+        // written inside the transaction of the command, so the evidence and
+        // its event are stored together or not at all.
+        await outbox.EnqueueAsync(new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = FindingsEventTypes.SubmissionReceived,
+            Version = 1,
+            ActorId = actor.UserId,
+            AggregateId = participation.Id,
+            OccurredAt = now,
+            Payload = JsonSerializer.Serialize(new FindingsEventPayload(
+                participation.Id,
+                submission.Id,
+                task.Id,
+                submission.ProjectId,
+                participation.ContributorId,
+                task.OwnerId,
+                null,
+                0,
+                "submission_received",
+                now)),
+        }, cancellationToken);
+
         await store.SaveChangesAsync(cancellationToken);
         await participationService.RecomputeTaskStatusAsync(task, cancellationToken);
 
@@ -580,6 +604,30 @@ public sealed class FindingsService(
             ToStatus = ParticipationService.ParticipationStateText(ParticipationState.ChangesRequested),
             ChangedBy = actor.UserId!.Value,
             ChangedAt = now,
+        }, cancellationToken);
+
+        // The contributor is told that a correction was asked for. The event is
+        // written inside the transaction of the command, so the correction and
+        // its event are stored together or not at all.
+        await outbox.EnqueueAsync(new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = FindingsEventTypes.CorrectionRequested,
+            Version = 1,
+            ActorId = actor.UserId,
+            AggregateId = participation.Id,
+            OccurredAt = now,
+            Payload = JsonSerializer.Serialize(new FindingsEventPayload(
+                participation.Id,
+                submission.Id,
+                task.Id,
+                submission.ProjectId,
+                participation.ContributorId,
+                task.OwnerId,
+                null,
+                0,
+                "correction_requested",
+                now)),
         }, cancellationToken);
 
         await store.SaveChangesAsync(cancellationToken);

@@ -7,6 +7,7 @@ using Blindmesh.Infrastructure.Credits;
 using Blindmesh.Infrastructure.Findings;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Moderation;
+using Blindmesh.Infrastructure.Notifications;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Blindmesh.Infrastructure.Projects;
 using Blindmesh.Infrastructure.Reputation;
@@ -105,6 +106,10 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
 
     public DbSet<Blindmesh.Domain.Reputation.ReputationSnapshot> ReputationSnapshots => Set<Blindmesh.Domain.Reputation.ReputationSnapshot>();
 
+    public DbSet<Blindmesh.Domain.Notifications.NotificationDelivery> NotificationDeliveries => Set<Blindmesh.Domain.Notifications.NotificationDelivery>();
+
+    public DbSet<Blindmesh.Domain.Notifications.NotificationPreference> NotificationPreferences => Set<Blindmesh.Domain.Notifications.NotificationPreference>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OutboxMessageEntity>(entity =>
@@ -167,5 +172,9 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // The tables of the reputation module. They are owned by the reputation
         // package and are not changed by any other module.
         modelBuilder.ApplyReputationModel();
+
+        // The tables of the notification module. They are owned by the
+        // notification package and are not changed by any other module.
+        modelBuilder.ApplyNotificationModel();
     }
 }

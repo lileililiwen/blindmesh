@@ -1479,6 +1479,139 @@ namespace Blindmesh.Infrastructure.Persistence.Migrations
                     b.ToTable("reports", (string)null);
                 });
 
+            modelBuilder.Entity("Blindmesh.Domain.Notifications.NotificationDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt_count");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("category");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("channel");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("DeadLetteredAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("dead_lettered_at");
+
+                    b.Property<string>("DeepLink")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("deep_link");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("last_error");
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("message_id");
+
+                    b.Property<DateTimeOffset>("NextAttemptAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<DateTimeOffset?>("ReadAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("read_at");
+
+                    b.Property<Guid>("RecipientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipient_id");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("subject");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("summary");
+
+                    b.Property<string>("UniqueKey")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("unique_key");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UniqueKey")
+                        .IsUnique()
+                        .HasDatabaseName("ux_notification_deliveries_unique_key");
+
+                    b.HasIndex("RecipientId", "CreatedAt")
+                        .HasDatabaseName("ix_notification_deliveries_recipient_created_at");
+
+                    b.HasIndex("Status", "NextAttemptAt")
+                        .HasDatabaseName("ix_notification_deliveries_status_next_attempt_at");
+
+                    b.ToTable("notification_deliveries", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Notifications.NotificationPreference", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<bool>("EmailEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("email_enabled");
+
+                    b.Property<bool>("InAppEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("in_app_enabled");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("notification_preferences", (string)null);
+                });
+
             modelBuilder.Entity("Blindmesh.Domain.Projects.Project", b =>
                 {
                     b.Property<Guid>("Id")

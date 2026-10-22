@@ -13,6 +13,12 @@ public static class FindingsEventTypes
 
     /// <summary>A finding of a contributor reached the confirmed state.</summary>
     public const string FindingConfirmed = "findings.finding.confirmed";
+
+    /// <summary>The owner of a task received the evidence of a seat.</summary>
+    public const string SubmissionReceived = "findings.submission.received";
+
+    /// <summary>The owner of a task asked the contributor for a correction.</summary>
+    public const string CorrectionRequested = "findings.correction.requested";
 }
 
 /// <summary>

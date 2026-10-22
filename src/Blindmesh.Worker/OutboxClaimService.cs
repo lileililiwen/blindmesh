@@ -50,8 +50,11 @@ public sealed class OutboxClaimService(
 
         var dbContext = provider.GetRequiredService<BlindmeshDbContext>();
         var repository = provider.GetRequiredService<OutboxRepository>();
+        // One event may have more than one consumer, so the handlers are
+        // grouped by their event type.
         var handlers = provider.GetServices<IOutboxHandler>()
-            .ToDictionary(handler => handler.EventType, StringComparer.Ordinal);
+            .GroupBy(handler => handler.EventType, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -61,7 +64,7 @@ public sealed class OutboxClaimService(
 
         foreach (var message in messages)
         {
-            if (!handlers.TryGetValue(message.Type, out var handler))
+            if (!handlers.TryGetValue(message.Type, out var matching))
             {
                 logger.LogWarning(
                     "No handler is registered for outbox event {EventType} {MessageId}. The event stays pending.",
@@ -71,20 +74,23 @@ public sealed class OutboxClaimService(
                 continue;
             }
 
+            var outboxMessage = new Domain.Shared.OutboxMessage
+            {
+                Id = message.Id,
+                Type = message.Type,
+                Version = message.Version,
+                ActorId = message.ActorId,
+                AggregateId = message.AggregateId,
+                OccurredAt = message.OccurredAt,
+                Payload = message.Payload,
+            };
+
             try
             {
-                await handler.HandleAsync(
-                    new Domain.Shared.OutboxMessage
-                    {
-                        Id = message.Id,
-                        Type = message.Type,
-                        Version = message.Version,
-                        ActorId = message.ActorId,
-                        AggregateId = message.AggregateId,
-                        OccurredAt = message.OccurredAt,
-                        Payload = message.Payload,
-                    },
-                    cancellationToken);
+                foreach (var handler in matching)
+                {
+                    await handler.HandleAsync(outboxMessage, cancellationToken);
+                }
 
                 await repository.MarkProcessedAsync(message, DateTimeOffset.UtcNow, cancellationToken);
                 applied += 1;

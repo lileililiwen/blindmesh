@@ -11,8 +11,9 @@ public enum TaskVisibility
     Public,
 
     /// <summary>
-    /// The summary of the task is readable, the instructions are not. The
-    /// instructions are released by the matching of the marketplace.
+    /// The task is readable by the accounts that satisfy every hard condition
+    /// of the task, and by the owner and the members of the project. The
+    /// instructions of the task stay with the insiders of the project.
     /// </summary>
     Matched,
 

@@ -21,6 +21,12 @@ public static class CapabilityServiceCollectionExtensions
         // not see.
         services.AddScoped<ITaskConditionReader, PublishedTaskConditionReader>();
 
+        // The seam that hands the matchable declarations of every account and
+        // the evaluation of one account to the matching module. It is a reader
+        // of its own module, so the matching module never depends on the
+        // service that reads the conditions of a task.
+        services.AddScoped<ICandidateMatchReader, CandidateMatchReader>();
+
         return services;
     }
 }

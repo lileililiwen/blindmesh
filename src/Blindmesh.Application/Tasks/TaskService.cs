@@ -18,8 +18,16 @@ public sealed class TaskService(
     ITaskStore store,
     ProjectService projects,
     ICreditService credits,
-    IClock clock)
+    IClock clock,
+    ITaskMatchSeam match)
 {
+    /// <summary>
+    /// The number of the candidate rows of the matched scope that one page of
+    /// the list confirms with the rule of the scope. The budget keeps the work
+    /// of one page bounded; the rows of the public scope need no confirmation.
+    /// </summary>
+    private const int MaxCandidateRows = 50;
+
     /// <summary>
     /// The tasks the actor may see, in the stable descending order of the list
     /// envelope. The answer carries summaries only, so a candidate never reads
@@ -35,7 +43,35 @@ public sealed class TaskService(
 
         var page = await store.ListVisibleAsync(actor.UserId, query, cancellationToken);
 
-        if (page.Tasks.Count == 0)
+        // The store returns the rows of the matched scope as a superset. The
+        // service confirms every one of them with the rule of the scope and
+        // drops the rows the account does not fit.
+        var visible = new List<MarketplaceTask>();
+        var confirmed = 0;
+
+        foreach (var item in page.Items)
+        {
+            if (!item.RequiresMatch)
+            {
+                visible.Add(item.Task);
+                continue;
+            }
+
+            if (confirmed >= MaxCandidateRows)
+            {
+                continue;
+            }
+
+            confirmed++;
+
+            if (actor.UserId is Guid userId &&
+                await match.MatchesAsync(item.Task.Id, userId, cancellationToken))
+            {
+                visible.Add(item.Task);
+            }
+        }
+
+        if (visible.Count == 0)
         {
             return new PagedResult<TaskSummaryView>
             {
@@ -44,15 +80,15 @@ public sealed class TaskService(
             };
         }
 
-        var taskIds = page.Tasks.Select(task => task.Id).ToArray();
-        var projectIds = page.Tasks.Select(task => task.ProjectId).Distinct().ToArray();
-        var ownerIds = page.Tasks.Select(task => task.OwnerId).Distinct().ToArray();
+        var taskIds = visible.Select(task => task.Id).ToArray();
+        var projectIds = visible.Select(task => task.ProjectId).Distinct().ToArray();
+        var ownerIds = visible.Select(task => task.OwnerId).Distinct().ToArray();
 
         var requirements = await store.ListRequirementsAsync(taskIds, cancellationToken);
         var projectNames = await store.ListProjectNamesAsync(projectIds, cancellationToken);
         var usernames = await store.ListUsernamesAsync(ownerIds, cancellationToken);
 
-        var items = page.Tasks
+        var items = visible
             .Select(task => new TaskSummaryView(
                 task.Id,
                 task.Title,
@@ -554,7 +590,10 @@ public sealed class TaskService(
 
     /// <summary>
     /// The task and what the actor may do with it. The access is null when the
-    /// task may not be seen by the actor at all.
+    /// task may not be seen by the actor at all. The rule of the scope of the
+    /// matching module decides every read that is not the read of an insider,
+    /// so a task that the list of the marketplace does not show is never
+    /// readable through this route.
     /// </summary>
     private async Task<TaskAccess?> LoadAsync(
         TaskActor actor,
@@ -573,33 +612,40 @@ public sealed class TaskService(
             task.ProjectId,
             cancellationToken);
 
-        if (projectAccess is null)
+        if (projectAccess is { IsInsider: true })
         {
-            return null;
-        }
+            var canManage = actor.UserId == task.OwnerId || projectAccess.IsOwner;
 
-        var canManage = actor.UserId == task.OwnerId || projectAccess.IsOwner;
-
-        if (projectAccess.IsInsider)
-        {
             return new TaskAccess(task, projectAccess, SummaryOnly: false, CanManage: canManage);
         }
 
-        // A visitor only reads the tasks of a public and active project.
-        if (!string.Equals(projectAccess.Visibility, "public", StringComparison.Ordinal) ||
-            !projectAccess.IsActive)
+        // A visitor without a session has no declaration, so it reads only the
+        // public scope: a public task of a public and active project.
+        if (actor.UserId is not Guid userId)
+        {
+            if (projectAccess is null ||
+                !string.Equals(projectAccess.Visibility, "public", StringComparison.Ordinal) ||
+                !projectAccess.IsActive)
+            {
+                return null;
+            }
+
+            return task.Visibility == TaskVisibility.Public
+                ? new TaskAccess(task, projectAccess, SummaryOnly: false, CanManage: false)
+                : null;
+        }
+
+        // Every other account is decided by the rule of the scope.
+        if (!await match.MatchesAsync(taskId, userId, cancellationToken))
         {
             return null;
         }
 
-        return task.Visibility switch
-        {
-            TaskVisibility.Public =>
-                new TaskAccess(task, projectAccess, SummaryOnly: false, CanManage: false),
-            TaskVisibility.Matched =>
-                new TaskAccess(task, projectAccess, SummaryOnly: true, CanManage: false),
-            _ => null,
-        };
+        // The task of a project of the matched scope and a task of the matched
+        // scope keep their instructions: the summary is enough for a candidate.
+        var summaryOnly = projectAccess is null || task.Visibility != TaskVisibility.Public;
+
+        return new TaskAccess(task, projectAccess, SummaryOnly: summaryOnly, CanManage: false);
     }
 
     private async Task<TaskDetailView> ToDetailAsync(TaskAccess access, CancellationToken cancellationToken)
@@ -810,9 +856,15 @@ public sealed class TaskService(
     };
 
     /// <summary>The task and what the actor may do with it.</summary>
+    /// <summary>
+    /// The task and what the actor may do with it. The project of the task is
+    /// null when the project is of the matched scope and the actor is not an
+    /// insider of it: the project module keeps the visibility of a project,
+    /// and the rule of the scope of the matching module decides the task.
+    /// </summary>
     private sealed record TaskAccess(
         MarketplaceTask Task,
-        ProjectAccessView Project,
+        ProjectAccessView? Project,
         bool SummaryOnly,
         bool CanManage);
 }

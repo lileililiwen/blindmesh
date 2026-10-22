@@ -79,6 +79,34 @@ public sealed class EfCapabilityStore(BlindmeshDbContext dbContext) : ICapabilit
             .ThenBy(capability => capability.Id)
             .ToListAsync(cancellationToken);
 
+        return await ToMatchableAsync(capabilities, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<MatchableCapability>> ListAllMatchableAsync(
+        CancellationToken cancellationToken)
+    {
+        var capabilities = await dbContext.Capabilities
+            .AsNoTracking()
+            .Where(capability =>
+                capability.Visibility == CapabilityVisibility.Public &&
+                capability.Available &&
+                capability.Status == CapabilityStatus.Declared)
+            .OrderBy(capability => capability.CreatedAt)
+            .ThenBy(capability => capability.Id)
+            .ToListAsync(cancellationToken);
+
+        return await ToMatchableAsync(capabilities, cancellationToken);
+    }
+
+    /// <summary>
+    /// The declarations with their tags. The rule of a matchable declaration is
+    /// the same for one owner and for every owner: the declaration is public,
+    /// it is available and it is not withdrawn.
+    /// </summary>
+    private async Task<IReadOnlyList<MatchableCapability>> ToMatchableAsync(
+        IReadOnlyList<Capability> capabilities,
+        CancellationToken cancellationToken)
+    {
         if (capabilities.Count == 0)
         {
             return [];

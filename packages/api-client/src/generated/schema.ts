@@ -1118,6 +1118,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/tasks/{id}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the accounts that fit a task of the project of the caller. */
+        get: operations["ListTaskCandidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1212,11 +1229,37 @@ export interface components {
             /** Format: date-time */
             banned_at: null | string;
         };
+        CandidateConditionOutcome: {
+            kind: string;
+            value: string;
+            satisfied: boolean;
+            declaration_label: null | string;
+            declaration_tag: null | string;
+        };
+        CandidateListView: {
+            /** Format: uuid */
+            task_id: string;
+            conditions: components["schemas"]["MatchingConditionView"][];
+            candidates: components["schemas"]["CandidateMatch"][];
+        };
+        CandidateMatch: {
+            /** Format: uuid */
+            account_id: string;
+            username: string;
+            display_name: string;
+            profile_reference: string;
+            /** Format: int32 */
+            accepted_contributions: number | string;
+            order_reason: components["schemas"]["MatchOrderReason"];
+            conditions: components["schemas"]["CandidateConditionOutcome"][];
+        };
         CapabilityConditionOutcome: {
             kind: string;
             value: string;
             satisfied: boolean;
             reason: string;
+            declaration_label?: null | string;
+            declaration_tag?: null | string;
         };
         CapabilityEligibilityView: {
             eligible: boolean;
@@ -1482,6 +1525,14 @@ export interface components {
         };
         GrantRequest: {
             rules_accepted?: boolean;
+        };
+        MatchOrderReason: {
+            code: string;
+            text: string;
+        };
+        MatchingConditionView: {
+            kind: string;
+            value: string;
         };
         NotificationPreferenceView: {
             in_app_enabled: boolean;
@@ -6508,6 +6559,53 @@ export interface operations {
             };
             /** @description Internal Server Error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ListTaskCandidates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateListView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

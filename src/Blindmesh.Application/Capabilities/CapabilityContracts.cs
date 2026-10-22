@@ -41,12 +41,19 @@ public sealed record CapabilityView(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
 
-/// <summary>One hard condition and the outcome of its match.</summary>
+/// <summary>
+/// One hard condition and the outcome of its match. The label and the tag of
+/// the public declaration that satisfied the condition are part of the answer
+/// when the condition was evaluated for another account; they are null when
+/// the condition was evaluated for the owner of the declarations.
+/// </summary>
 public sealed record CapabilityConditionOutcome(
     string Kind,
     string Value,
     bool Satisfied,
-    string Reason);
+    string Reason,
+    string? DeclarationLabel = null,
+    string? DeclarationTag = null);
 
 /// <summary>
 /// The outcome of an eligibility evaluation. It holds the decision and the

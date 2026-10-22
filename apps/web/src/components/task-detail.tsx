@@ -308,6 +308,12 @@ export function TaskDetail({ taskId }: { taskId: string }) {
       {task.can_manage ? <TaskApplications taskId={task.id} /> : null}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
+        {signedIn && task.can_manage ? (
+          <Button asChild variant="secondary">
+            <Link href={`/tasks/${task.id}/candidates`}>Find the candidates</Link>
+          </Button>
+        ) : null}
+
         <Button asChild variant="secondary">
           <Link href={`/tasks/${task.id}/eligibility`}>Check my eligibility</Link>
         </Button>

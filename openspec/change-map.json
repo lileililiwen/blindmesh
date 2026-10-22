@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "requirements.md",
-  "selected": "pilot-operations",
+  "selected": "scoped-matching",
   "changes": [
     {
       "id": "runtime-foundation",
@@ -135,6 +135,20 @@
       "status": "archived",
       "readiness": "implemented-and-verified-2026-10-22",
       "module": "src/Blindmesh.Domain/Operations, src/Blindmesh.Application/Operations, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
+    },
+    {
+      "id": "scoped-matching",
+      "order": 13,
+      "depends_on": [
+        "capability-directory",
+        "task-publication",
+        "participation-execution",
+        "reputation-history"
+      ],
+      "requirement_prefix": "MATCH",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-22",
+      "module": "src/Blindmesh.Domain/Matching, src/Blindmesh.Application/Matching, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     }
   ]
 }

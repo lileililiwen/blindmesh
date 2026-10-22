@@ -4892,6 +4892,57 @@
           }
         }
       }
+    },
+    "/v1/tasks/{id}/candidates": {
+      "get": {
+        "tags": [
+          "MatchingEndpoints"
+        ],
+        "summary": "Read the accounts that fit a task of the project of the caller.",
+        "operationId": "ListTaskCandidates",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateListView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5234,6 +5285,109 @@
           }
         }
       },
+      "CandidateConditionOutcome": {
+        "required": [
+          "kind",
+          "value",
+          "satisfied",
+          "declaration_label",
+          "declaration_tag"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "satisfied": {
+            "type": "boolean"
+          },
+          "declaration_label": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "declaration_tag": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CandidateListView": {
+        "required": [
+          "task_id",
+          "conditions",
+          "candidates"
+        ],
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchingConditionView"
+            }
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CandidateMatch"
+            }
+          }
+        }
+      },
+      "CandidateMatch": {
+        "required": [
+          "account_id",
+          "username",
+          "display_name",
+          "profile_reference",
+          "accepted_contributions",
+          "order_reason",
+          "conditions"
+        ],
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "profile_reference": {
+            "type": "string"
+          },
+          "accepted_contributions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "order_reason": {
+            "$ref": "#/components/schemas/MatchOrderReason"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CandidateConditionOutcome"
+            }
+          }
+        }
+      },
       "CapabilityConditionOutcome": {
         "required": [
           "kind",
@@ -5254,6 +5408,18 @@
           },
           "reason": {
             "type": "string"
+          },
+          "declaration_label": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "declaration_tag": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -6337,6 +6503,36 @@
         "properties": {
           "rules_accepted": {
             "type": "boolean"
+          }
+        }
+      },
+      "MatchOrderReason": {
+        "required": [
+          "code",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "MatchingConditionView": {
+        "required": [
+          "kind",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
           }
         }
       },
@@ -9265,6 +9461,9 @@
     },
     {
       "name": "OperationsEndpoints"
+    },
+    {
+      "name": "MatchingEndpoints"
     }
   ]
 }

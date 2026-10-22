@@ -137,4 +137,12 @@ public sealed record TaskListQuery(
     Guid? ProjectId);
 
 /// <summary>One page of the list of the tasks.</summary>
-public sealed record TaskPage(IReadOnlyList<MarketplaceTask> Tasks, TaskCursor? Next);
+public sealed record TaskPage(IReadOnlyList<TaskPageItem> Items, TaskCursor? Next);
+
+/// <summary>
+/// One task of a page of the list. The flag tells the service that the row
+/// belongs to the matched scope, so the service confirms it with the rule of
+/// the scope before it shows it. A row of the public scope needs no
+/// confirmation.
+/// </summary>
+public sealed record TaskPageItem(MarketplaceTask Task, bool RequiresMatch);

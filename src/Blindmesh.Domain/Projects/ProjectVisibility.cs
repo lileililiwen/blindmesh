@@ -13,9 +13,9 @@ public enum ProjectVisibility
     Private,
 
     /// <summary>
-    /// Only the owner, the members and the eligible candidates of the matching
-    /// scope may read it. The matching scope is owned by a later package, so
-    /// only the owner and the members can read a matched project today.
+    /// Only the owner, the members and the accounts that fit one of the open
+    /// tasks of the project may read it. The rule of the scope of the matching
+    /// module decides, so the project and its tasks never disagree.
     /// </summary>
     Matched,
 }

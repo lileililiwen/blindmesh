@@ -17,6 +17,11 @@ public static class TaskServiceCollectionExtensions
         services.AddScoped<TaskService>();
         services.AddScoped<ParticipationService>();
 
+        // The seam that hands the hard conditions of a task to the matching
+        // module. The reader returns the conditions without a scope rule, so
+        // the matching module never depends on the reader that applies it.
+        services.AddScoped<ITaskRequirementsReader, TaskRequirementsReader>();
+
         return services;
     }
 }

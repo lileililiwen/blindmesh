@@ -103,8 +103,12 @@ public sealed class EfProjectStore(BlindmeshDbContext dbContext) : IProjectStore
 
         if (actorId is Guid userId)
         {
+            // A project of the matched scope is a candidate: the store returns
+            // it as a superset and the service keeps the ones the account
+            // fits an open task of.
             projects = projects.Where(project =>
                 project.Visibility == ProjectVisibility.Public ||
+                project.Visibility == ProjectVisibility.Matched ||
                 project.OwnerId == userId ||
                 dbContext.ProjectMembers.Any(member => member.ProjectId == project.Id && member.UserId == userId));
         }

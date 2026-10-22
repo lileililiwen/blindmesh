@@ -176,11 +176,19 @@ public sealed class EfTaskStore(BlindmeshDbContext dbContext) : ITaskStore
 
         if (actorId is Guid userId)
         {
+            // The rows of the public scope are visible to every visitor. The
+            // rows of the matched scope are candidates: the store returns them
+            // as a superset and the service confirms every one of them with
+            // the rule of the scope before it shows them.
             rows = rows.Where(row =>
                 (row.Project.Visibility == ProjectVisibility.Public &&
                  row.Project.Status == ProjectStatus.Active &&
                  (row.Task.Status == TaskState.Open || row.Task.Status == TaskState.InProgress) &&
-                 (row.Task.Visibility == TaskVisibility.Public ||
+                 row.Task.Visibility == TaskVisibility.Public) ||
+                (row.Project.Status == ProjectStatus.Active &&
+                 (row.Task.Status == TaskState.Open || row.Task.Status == TaskState.InProgress) &&
+                 row.Task.Visibility != TaskVisibility.Private &&
+                 (row.Project.Visibility == ProjectVisibility.Matched ||
                   row.Task.Visibility == TaskVisibility.Matched)) ||
                 row.Project.OwnerId == userId ||
                 memberProjectIds.Contains(row.Project.Id));
@@ -191,8 +199,7 @@ public sealed class EfTaskStore(BlindmeshDbContext dbContext) : ITaskStore
                 row.Project.Visibility == ProjectVisibility.Public &&
                 row.Project.Status == ProjectStatus.Active &&
                 (row.Task.Status == TaskState.Open || row.Task.Status == TaskState.InProgress) &&
-                (row.Task.Visibility == TaskVisibility.Public ||
-                 row.Task.Visibility == TaskVisibility.Matched));
+                row.Task.Visibility == TaskVisibility.Public);
         }
 
         if (query.ProjectId is Guid projectId)
@@ -235,7 +242,7 @@ public sealed class EfTaskStore(BlindmeshDbContext dbContext) : ITaskStore
             .OrderByDescending(row => row.Task.CreatedAt)
             .ThenByDescending(row => row.Task.Id)
             .Take(query.Limit + 1)
-            .Select(row => row.Task)
+            .Select(row => new { row.Task, row.Project.Visibility, row.Project.OwnerId })
             .ToListAsync(cancellationToken);
 
         var hasMore = items.Count > query.Limit;
@@ -249,11 +256,28 @@ public sealed class EfTaskStore(BlindmeshDbContext dbContext) : ITaskStore
 
         if (hasMore && items.Count > 0)
         {
-            var last = items[^1];
+            var last = items[^1].Task;
             next = new TaskCursor(last.CreatedAt, last.Id);
         }
 
-        return new TaskPage(items, next);
+        var page = items
+            .Select(item =>
+            {
+                var isInsider = actorId is Guid ownerId &&
+                    (item.OwnerId == ownerId || memberProjectIds.Contains(item.Task.ProjectId));
+
+                // A row of the matched scope needs the confirmation of the
+                // service. A row of the public scope is visible to every
+                // visitor and an insider reads everything of its project.
+                var requiresMatch = !isInsider &&
+                    (item.Visibility == ProjectVisibility.Matched ||
+                     item.Task.Visibility == TaskVisibility.Matched);
+
+                return new TaskPageItem(item.Task, requiresMatch);
+            })
+            .ToArray();
+
+        return new TaskPage(page, next);
     }
 
     public async Task<IReadOnlyDictionary<Guid, string>> ListUsernamesAsync(

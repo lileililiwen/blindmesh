@@ -474,37 +474,8 @@ public sealed class CapabilityService(
 
     private static CapabilityConditionOutcome Evaluate(
         CapabilityHardCondition condition,
-        IReadOnlyList<MatchableCapability> declarations)
-    {
-        var kind = KindText(condition.Kind);
-        var value = condition.Value.Trim();
-
-        foreach (var declaration in declarations)
-        {
-            if (declaration.Capability.Kind != condition.Kind)
-            {
-                continue;
-            }
-
-            if (!CapabilityRules.Matches(declaration.Capability.Label, declaration.Tags, value))
-            {
-                continue;
-            }
-
-            return new CapabilityConditionOutcome(
-                kind,
-                value,
-                true,
-                $"Your public {kind} declaration '{declaration.Capability.Label}' matches the required {kind} '{value}'.");
-        }
-
-        return new CapabilityConditionOutcome(
-            kind,
-            value,
-            false,
-            $"You have no public and available {kind} declaration that matches '{value}'. " +
-            $"Declare one, or make your {kind} declaration public and available, so it can be matched.");
-    }
+        IReadOnlyList<MatchableCapability> declarations) =>
+        CapabilityEvaluation.EvaluateForOwner(condition, declarations);
 
     /// <summary>True when a declaration may be used for a match.</summary>
     private static bool IsMatchable(Capability capability) =>

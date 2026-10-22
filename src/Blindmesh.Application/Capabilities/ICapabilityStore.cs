@@ -35,6 +35,14 @@ public interface ICapabilityStore
         Guid ownerId,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    /// The matchable declarations of every account: the public ones that are
+    /// available and not withdrawn. The rule is the rule of
+    /// <see cref="ListMatchableAsync"/>, without the owner.
+    /// </summary>
+    Task<IReadOnlyList<MatchableCapability>> ListAllMatchableAsync(
+        CancellationToken cancellationToken);
+
     /// <summary>The usernames of the given users. A missing user is left out.</summary>
     Task<IReadOnlyDictionary<Guid, string>> ListUsernamesAsync(
         IReadOnlyCollection<Guid> userIds,

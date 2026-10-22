@@ -3,6 +3,7 @@ using Blindmesh.Infrastructure.Capabilities;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Credits;
 using Blindmesh.Infrastructure.Findings;
+using Blindmesh.Infrastructure.Matching;
 using Blindmesh.Infrastructure.Moderation;
 using Blindmesh.Infrastructure.Notifications;
 using Blindmesh.Infrastructure.Projects;
@@ -33,6 +34,11 @@ builder.Services.AddBlindmeshReputation();
 // The notification module owns its own queue, so the worker registers it and
 // sends the deliveries that are due.
 builder.Services.AddBlindmeshNotifications();
+// The project module of the worker asks the rule of the scope of the matching
+// module, because the project service resolves the tasks of a project. Without
+// it the claim cycle of the outbox cannot resolve the service and fails every
+// cycle, and the projection of the reputation never runs.
+builder.Services.AddBlindmeshMatching();
 
 builder.Services.AddSingleton<IOutboxHandler, RuntimeHeartbeatHandler>();
 

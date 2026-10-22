@@ -24,7 +24,8 @@ public sealed class ParticipationService(
     CapabilityService capabilities,
     ICreditService credits,
     IOutboxWriter outbox,
-    IClock clock)
+    IClock clock,
+    ITaskMatchSeam match)
 {
     private const int SweepLimit = 50;
 
@@ -81,16 +82,20 @@ public sealed class ParticipationService(
             task.ProjectId,
             cancellationToken);
 
-        if (access is null || !MaySeeTask(access, task))
+        if (access is { IsInsider: true })
         {
-            return NotFound();
+            // A member of the project of the task never earns from that
+            // project, even when the public capabilities match.
+            return Forbidden("A member of the project cannot earn credits from it.");
         }
 
-        // A member of the project of the task never earns from that project,
-        // even when the public capabilities match.
-        if (access.IsInsider)
+        // The rule of the scope of the matching module decides: a task of the
+        // matched scope is open to the accounts that fit every hard condition
+        // of the task, and to nobody else.
+        if (actor.UserId is not Guid applicantId ||
+            !await match.MatchesAsync(taskId, applicantId, cancellationToken))
         {
-            return Forbidden("A member of the project cannot earn credits from it.");
+            return NotFound();
         }
 
         if (task.Status is not (TaskState.Open or TaskState.InProgress))
@@ -249,12 +254,10 @@ public sealed class ParticipationService(
             return StateConflict("The admission of this task is closed.");
         }
 
-        var applicant = await projects.GetAccessAsync(
-            new ProjectActor(participation.ContributorId, string.Empty),
-            task.ProjectId,
-            cancellationToken);
-
-        if (applicant is null || applicant.IsInsider)
+        if (await projects.IsInsiderAsync(
+                task.ProjectId,
+                participation.ContributorId,
+                cancellationToken))
         {
             return StateConflict("A member of the project cannot earn credits from it.");
         }
@@ -657,13 +660,8 @@ public sealed class ParticipationService(
             task.ProjectId,
             cancellationToken);
 
-        if (access is null)
-        {
-            return NotFound();
-        }
-
         var isContributor = participation.ContributorId == actor.UserId;
-        var canManage = task.OwnerId == actor.UserId || access.IsOwner;
+        var canManage = task.OwnerId == actor.UserId || (access?.IsOwner ?? false);
 
         if (!isContributor && !canManage)
         {
@@ -1031,11 +1029,6 @@ public sealed class ParticipationService(
             task.ProjectId,
             cancellationToken);
 
-        if (access is null)
-        {
-            return (null, NotFound());
-        }
-
         var participation = await store.LockParticipationAsync(participationId, cancellationToken);
 
         if (participation is null)
@@ -1044,8 +1037,12 @@ public sealed class ParticipationService(
         }
 
         var isContributor = participation.ContributorId == actor.UserId;
-        var canManage = task.OwnerId == actor.UserId || access.IsOwner;
+        var canManage = task.OwnerId == actor.UserId || (access?.IsOwner ?? false);
 
+        // The access of the project may be null: a contributor that holds a
+        // seat of a task of the matched scope is not a member of the project.
+        // The seat is read by the contributor that holds it and by the owner
+        // of the task, and by nobody else.
         if (!isContributor && !canManage)
         {
             return (null, NotFound());
@@ -1058,7 +1055,7 @@ public sealed class ParticipationService(
         ParticipationActor actor,
         Participation participation,
         MarketplaceTask task,
-        ProjectAccessView access,
+        ProjectAccessView? access,
         CancellationToken cancellationToken)
     {
         var slots = await tasks.ListSlotsAsync([task.Id], cancellationToken);
@@ -1073,7 +1070,7 @@ public sealed class ParticipationService(
         var projectNames = await tasks.ListProjectNamesAsync([task.ProjectId], cancellationToken);
 
         var isContributor = participation.ContributorId == actor.UserId;
-        var canManage = task.OwnerId == actor.UserId || access.IsOwner;
+        var canManage = task.OwnerId == actor.UserId || (access?.IsOwner ?? false);
 
         var application = await store.FindApplicationAsync(participation.ApplicationId, cancellationToken);
 
@@ -1214,12 +1211,6 @@ public sealed class ParticipationService(
     /// A visitor only reads a task of a public and active project. A task of a
     /// private project or a private task of a public project is not found.
     /// </summary>
-    private static bool MaySeeTask(ProjectAccessView access, MarketplaceTask task) =>
-        access.IsInsider ||
-        (access.IsActive &&
-         string.Equals(access.Visibility, "public", StringComparison.Ordinal) &&
-         (task.Visibility == TaskVisibility.Public || task.Visibility == TaskVisibility.Matched));
-
     private static string UnmetConditions(CapabilityEligibilityView? evaluation)
     {
         if (evaluation is null)
@@ -1299,7 +1290,7 @@ public sealed class ParticipationService(
     private sealed record ParticipationAccess(
         Participation Participation,
         MarketplaceTask Task,
-        ProjectAccessView ProjectAccess,
+        ProjectAccessView? ProjectAccess,
         bool CanManage,
         bool IsContributor);
 }

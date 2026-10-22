@@ -1,6 +1,7 @@
 using System.Globalization;
 using Blindmesh.Application.Abstractions;
 using Blindmesh.Application.Contracts;
+using Blindmesh.Application.Tasks;
 using Blindmesh.Domain.Projects;
 
 namespace Blindmesh.Application.Projects;
@@ -11,7 +12,7 @@ namespace Blindmesh.Application.Projects;
 /// is checked again on every command, so a change of the membership or of the
 /// visibility is honoured by the next read.
 /// </summary>
-public sealed class ProjectService(IProjectStore store, IClock clock)
+public sealed class ProjectService(IProjectStore store, IClock clock, ITaskMatchSeam match)
 {
     /// <summary>What the actor may do with a project.</summary>
     private enum AccessLevel
@@ -38,7 +39,8 @@ public sealed class ProjectService(IProjectStore store, IClock clock)
 
     /// <summary>
     /// The projects the actor may see, in the stable descending order of the
-    /// list envelope.
+    /// list envelope. A project of the matched scope is listed for an account
+    /// that fits one of its open tasks, and for nobody else.
     /// </summary>
     public async Task<PagedResult<ProjectSummaryView>> ListAsync(
         ProjectActor actor,
@@ -51,10 +53,45 @@ public sealed class ProjectService(IProjectStore store, IClock clock)
             new ProjectListQuery(limit, cursor),
             cancellationToken);
 
-        var ownerIds = page.Items.Select(project => project.OwnerId).Distinct().ToArray();
+        // The store returns the projects of the matched scope as a superset.
+        // The service keeps the ones the account fits an open task of, and it
+        // keeps the ones of the insiders of the project, because an insider
+        // reads everything of its project.
+        var visible = new List<Project>();
+
+        foreach (var project in page.Items)
+        {
+            if (project.Visibility != ProjectVisibility.Matched)
+            {
+                visible.Add(project);
+                continue;
+            }
+
+            if (actor.UserId is not Guid userId)
+            {
+                continue;
+            }
+
+            if (await IsInsiderAsync(project.Id, userId, cancellationToken) ||
+                await match.MatchingTaskIdsAsync(project.Id, userId, cancellationToken) is { Count: > 0 })
+            {
+                visible.Add(project);
+            }
+        }
+
+        if (visible.Count == 0)
+        {
+            return new PagedResult<ProjectSummaryView>
+            {
+                Items = [],
+                NextCursor = page.Next?.Encode(),
+            };
+        }
+
+        var ownerIds = visible.Select(project => project.OwnerId).Distinct().ToArray();
         var usernames = await store.ListUsernamesAsync(ownerIds, cancellationToken);
 
-        var items = page.Items
+        var items = visible
             .Select(project => new ProjectSummaryView(
                 project.Id,
                 project.Name,
@@ -76,7 +113,9 @@ public sealed class ProjectService(IProjectStore store, IClock clock)
 
     /// <summary>
     /// The committed state of a project. A project that the actor may not see
-    /// is not found, so the answer never reveals that it exists.
+    /// is not found, so the answer never reveals that it exists. A project of
+    /// the matched scope is read by an account that fits one of its open
+    /// tasks.
     /// </summary>
     public async Task<ProjectCommandResult> GetAsync(
         ProjectActor actor,
@@ -87,7 +126,16 @@ public sealed class ProjectService(IProjectStore store, IClock clock)
 
         if (access is null)
         {
-            return NotFound();
+            var matched = await LoadMatchedAsync(actor, projectId, cancellationToken);
+
+            if (matched is null)
+            {
+                return NotFound();
+            }
+
+            return new ProjectCommandResult(
+                ProjectCommandStatus.Succeeded,
+                await ToDetailAsync(matched, cancellationToken));
         }
 
         return new ProjectCommandResult(
@@ -584,6 +632,64 @@ public sealed class ProjectService(IProjectStore store, IClock clock)
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// True when the account is an insider of the project: the owner of it or a
+    /// member of it. The answer does not depend on the visibility of the
+    /// project, so it holds for a project of the matched scope too.
+    /// </summary>
+    public async Task<bool> IsInsiderAsync(
+        Guid projectId,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var project = await store.FindProjectAsync(projectId, cancellationToken);
+
+        if (project is null)
+        {
+            return false;
+        }
+
+        if (project.OwnerId == userId)
+        {
+            return true;
+        }
+
+        return await store.FindMemberAsync(projectId, userId, cancellationToken) is not null;
+    }
+
+    /// <summary>
+    /// The access of an account that is not an insider of a project of the
+    /// matched scope. The project is read by an account that fits one of its
+    /// open tasks, and by nobody else. The rule of the scope of the matching
+    /// module decides, so the project and the task never disagree.
+    /// </summary>
+    private async Task<ProjectAccess?> LoadMatchedAsync(
+        ProjectActor actor,
+        Guid projectId,
+        CancellationToken cancellationToken)
+    {
+        if (actor.UserId is not Guid userId)
+        {
+            return null;
+        }
+
+        var project = await store.FindProjectAsync(projectId, cancellationToken);
+
+        if (project is null || project.Visibility != ProjectVisibility.Matched)
+        {
+            return null;
+        }
+
+        var matching = await match.MatchingTaskIdsAsync(projectId, userId, cancellationToken);
+
+        if (matching.Count == 0)
+        {
+            return null;
+        }
+
+        return new ProjectAccess(project, AccessLevel.Reader);
     }
 
     private async Task<ProjectDetailView> ToDetailAsync(ProjectAccess access, CancellationToken cancellationToken)

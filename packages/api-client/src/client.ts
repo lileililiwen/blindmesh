@@ -69,6 +69,13 @@ export type TaskSlotResponse = TaskDetailResponse["slots"][number];
 
 export type TaskStatusChangeResponse = TaskDetailResponse["status_history"][number];
 
+export type CandidateListResponse =
+  paths["/v1/tasks/{id}/candidates"]["get"]["responses"][200]["content"]["application/json"];
+
+export type CandidateMatchResponse = CandidateListResponse["candidates"][number];
+
+export type CandidateConditionResponse = CandidateMatchResponse["conditions"][number];
+
 export type ParticipationListResponse = paths["/v1/work"]["get"]["responses"][200]["content"]["application/json"];
 
 export type ParticipationSummaryResponse = ParticipationListResponse["items"][number];
@@ -457,6 +464,8 @@ export type BlindmeshClient = {
     csrfToken: string,
     idempotencyKey: string,
   ): Promise<ClientResult<TaskDetailResponse>>;
+  /** Reads the accounts that fit a task of the project of the caller. */
+  listTaskCandidates(taskId: string): Promise<ClientResult<CandidateListResponse>>;
   /** Lists the work of the signed in contributor. */
   listWork(limit?: number, cursor?: string): Promise<ClientResult<ParticipationListResponse>>;
   /** Lists the applications of a task of the owner. */
@@ -984,6 +993,10 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
           "Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify({}),
+        cache: "no-store",
+      }),
+    listTaskCandidates: (taskId) =>
+      request<CandidateListResponse>(`/tasks/${encodeURIComponent(taskId)}/candidates`, {
         cache: "no-store",
       }),
     listWork: (limit, cursor) => {

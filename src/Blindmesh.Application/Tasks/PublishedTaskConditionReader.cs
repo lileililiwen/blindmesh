@@ -1,5 +1,4 @@
 using Blindmesh.Application.Capabilities;
-using Blindmesh.Application.Projects;
 using Blindmesh.Domain.Capabilities;
 using Blindmesh.Domain.Tasks;
 
@@ -11,9 +10,11 @@ namespace Blindmesh.Application.Tasks;
 /// of them. The reader answers with the conditions of a published task that
 /// the actor may see and with null for every other task, so a task that the
 /// actor may not see is never found through the eligibility of the
-/// marketplace.
+/// marketplace. The rule of the scope of the matching module decides, so the
+/// eligibility never names a condition of a task that the list of the
+/// marketplace does not show.
 /// </summary>
-public sealed class PublishedTaskConditionReader(ITaskStore store, ProjectService projects)
+public sealed class PublishedTaskConditionReader(ITaskStore store, ITaskMatchSeam match)
     : ITaskConditionReader
 {
     public async Task<IReadOnlyList<CapabilityHardCondition>?> ReadAsync(
@@ -28,22 +29,7 @@ public sealed class PublishedTaskConditionReader(ITaskStore store, ProjectServic
             return null;
         }
 
-        var access = await projects.GetAccessAsync(
-            new ProjectActor(actorId, string.Empty),
-            task.ProjectId,
-            cancellationToken);
-
-        if (access is null)
-        {
-            return null;
-        }
-
-        var visible = access.IsInsider ||
-            (access.IsActive &&
-             string.Equals(access.Visibility, "public", StringComparison.Ordinal) &&
-             (task.Visibility == TaskVisibility.Public || task.Visibility == TaskVisibility.Matched));
-
-        if (!visible)
+        if (!await match.MatchesAsync(taskId, actorId, cancellationToken))
         {
             return null;
         }
@@ -52,19 +38,9 @@ public sealed class PublishedTaskConditionReader(ITaskStore store, ProjectServic
 
         return requirements
             .GetValueOrDefault(taskId, [])
-            .Select(requirement => new CapabilityHardCondition(MapKind(requirement.Kind), requirement.Value))
+            .Select(requirement => new CapabilityHardCondition(
+                TaskRequirementKinds.Map(requirement.Kind),
+                requirement.Value))
             .ToArray();
     }
-
-    /// <summary>
-    /// The kind of a hard requirement in the vocabulary of the capabilities
-    /// module. A requirement of an unknown kind is a region, because the
-    /// domain never writes another kind.
-    /// </summary>
-    private static CapabilityKind MapKind(string kind) => kind.Trim().ToLowerInvariant() switch
-    {
-        "device" => CapabilityKind.Device,
-        "role" => CapabilityKind.Role,
-        _ => CapabilityKind.Region,
-    };
 }

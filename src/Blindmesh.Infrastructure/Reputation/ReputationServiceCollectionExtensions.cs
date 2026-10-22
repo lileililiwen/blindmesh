@@ -15,6 +15,11 @@ public static class ReputationServiceCollectionExtensions
         services.AddScoped<IReputationStore, EfReputationStore>();
         services.AddScoped<ReputationService>();
 
+        // The seam that hands the number of the accepted contributions of an
+        // account to the matching module. It reads the score and writes
+        // nothing.
+        services.AddScoped<IReputationStandingReader, ReputationStandingReader>();
+
         return services;
     }
 }

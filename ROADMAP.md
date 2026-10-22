@@ -1,6 +1,6 @@
 # Delivery roadmap
 
-All twelve packages are implemented, verified and archived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
+All thirteen packages are implemented, verified and archived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
 
 | Order | Target | Change | Independently accepted outcome |
 |---|---|---|---|
@@ -16,10 +16,13 @@ All twelve packages are implemented, verified and archived. Version labels are t
 | 10 | v0.3 trust | reputation-history (archived) | Completed contributions produce non-purchasable, explainable reputation |
 | 11 | v0.3 communication | notification-delivery (archived) | In-app and SMTP notifications survive retries without leaking private content |
 | 12 | v0.4 pilot | pilot-operations (archived) | Operator rehearses deploy, rollback, backup/restore, and measured pilot release gates |
+| 13 | v0.4 discovery | scoped-matching (archived) | The three visibility levels work; the owner of a task reads its candidates; the order of the list is a fair exploration rule |
 
 Foundation is deliberately before authentication; accounting is before publication. A task can never be published before its maximum budget is reserved. Baseline grant and expiry decisions are explicit in the credit change.
 
 Public pilot requires every MVP package, especially arbitration, privacy, real browser evidence, and operational recovery. Intermediate changes are independently verifiable slices, not a launch claim.
+
+The scoped matching package is the last of the delivery order. It closes the gap between the three visibility levels of the PRD and the product: a project or a task of the `matched` visibility is now readable by the accounts that fit its conditions and by nobody else, the owner of a task reads the list of the accounts that fit it, and the order of that list is a named exploration rule that puts the accounts without an accepted contribution first. The soft weights of the PRD stay unimplemented on purpose, because the PRD calls them hypotheses to calibrate and never a quality promise.
 
 ## Deferred PRD scope
 

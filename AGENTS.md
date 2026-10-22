@@ -9,9 +9,10 @@
 - Frontend: Node.js 24, npm, Next.js 16, React 19, TypeScript 5, Tailwind 4, shadcn/ui style primitives.
 - Verification: `dotnet restore Blindmesh.sln --locked-mode && dotnet format Blindmesh.sln --verify-no-changes && dotnet build Blindmesh.sln -c Release --no-restore && dotnet test Blindmesh.sln -c Release --no-build` and `npm --prefix apps/web ci && npm --prefix apps/web run lint && npm --prefix apps/web run typecheck && npm --prefix apps/web run build && npm --prefix apps/web run api:check`.
 - Planning verification: `python3 scripts/verify_bootstrap.py && node scripts/check-openspec-change-names.mjs && openspec validate --all --strict --no-interactive`.
+- Shared Gate: `forge gate .` does not run here (no Forge binary on PATH). Its parts run directly; the UI conformance check of the sibling governance tool currently reports one finding, `UI_AUTH_HANDROLLED`, on the own sign in screen of the product, because the auth package of the shared UI layer is not adopted yet.
 - `requirements.md`: original PRD; preserve it.
 - `src/`: C# API, worker, application, domain and infrastructure. `apps/web/`: the only web application. `packages/api-client/`: the generated TypeScript client. `tests/`: xUnit integration tests and the Playwright journeys. `infra/`: Compose and Caddy configuration.
-- `docs/`: architecture, PRD coverage, design baseline, evidence.
+- `docs/`: architecture, PRD coverage, branding, bootstrap evidence, token evidence, the platform adoption note and the capture plan.
 - `openspec/`: config, package map, dependency-ordered active change proposals.
 - `scripts/`: documentation verification only.
 - `.github/workflows/`: planning verification CI; no application build/deploy pipeline yet.

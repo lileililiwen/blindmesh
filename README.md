@@ -13,6 +13,7 @@ Blindmesh is a mutual testing platform for independent developers. Contributors 
 - [Architecture and shared contracts](docs/architecture.md).
 - [Requirements coverage](docs/requirements-coverage.md).
 - [Handoff and actual evidence](HANDOFF.md).
+- [Capture plan and real screenshots](docs/assets/capture-plan.md).
 
 ## Run the runtime
 
@@ -68,6 +69,8 @@ npm --prefix apps/web run test:e2e -- --project=chromium --grep NOTIF
 npm --prefix apps/web run test:a11y -- --grep NOTIF
 npm --prefix apps/web run test:e2e -- --project=chromium --grep OPS
 npm --prefix apps/web run test:a11y -- --grep OPS
+npm --prefix apps/web run test:e2e -- --project=chromium --grep MATCH
+npm --prefix apps/web run test:a11y -- --grep MATCH
 python3 scripts/verify_bootstrap.py
 node scripts/check-openspec-change-names.mjs
 openspec validate --all --strict --no-interactive
@@ -77,7 +80,7 @@ The browser tests need the web application and the API running. The shared platf
 
 ## Planned MVP
 
-GitHub sign-in and profiles; projects; capability declarations; a unified task marketplace; independent participations; structured submissions and findings; protected screenshots/logs; transactional credit escrow, settlement, and refunds; moderation, reputation, notifications, and a verified pilot deployment.
+GitHub sign-in and profiles; projects; capability declarations; a unified task marketplace; independent participations; structured submissions and findings; protected screenshots/logs; transactional credit escrow, settlement, and refunds; moderation, reputation, notifications, and a verified pilot deployment. The matching of the marketplace is scoped: a project and a task carry the visibility `public`, `matched` or `private`, the owner of a task reads the accounts that fit it, and the order of that list is a fair exploration rule and never a score.
 
 The implementation is C# 14 / .NET 10 / ASP.NET Core 10 / EF Core 10 with Npgsql, PostgreSQL 17, and Next.js 16 / React 19 / TypeScript 5 on Node.js 24. NuGet and npm manage backend and frontend dependencies. The C# backend supersedes the original PRD's Rust recommendation by user direction; the original PRD remains unchanged. See the architecture for ownership, contracts, UI behavior, and dependency policy.
 

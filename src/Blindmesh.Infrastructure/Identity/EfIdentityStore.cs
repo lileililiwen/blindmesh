@@ -129,6 +129,40 @@ public sealed class EfIdentityStore(BlindmeshDbContext dbContext) : IIdentitySto
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task RemoveExternalIdentityAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var identities = await dbContext.ExternalIdentities
+            .Where(identity => identity.UserId == userId)
+            .ToListAsync(cancellationToken);
+
+        if (identities.Count == 0)
+        {
+            return;
+        }
+
+        dbContext.ExternalIdentities.RemoveRange(identities);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task RevokeSessionsAsync(Guid userId, DateTimeOffset revokedAt, CancellationToken cancellationToken)
+    {
+        var sessions = await dbContext.Sessions
+            .Where(session => session.UserId == userId && session.RevokedAt == null)
+            .ToListAsync(cancellationToken);
+
+        if (sessions.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var session in sessions)
+        {
+            session.RevokedAt = revokedAt;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public Task<OAuthState?> FindOAuthStateAsync(string stateHash, CancellationToken cancellationToken) =>
         dbContext.OAuthStates
             .AsNoTracking()

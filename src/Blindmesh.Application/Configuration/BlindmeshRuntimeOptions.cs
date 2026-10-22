@@ -13,6 +13,25 @@ public sealed class BlindmeshRuntimeOptions
     public ObjectStorageOptions ObjectStorage { get; init; } = new();
 
     public MailOptions Mail { get; init; } = new();
+
+    public OperationsOptions Operations { get; init; } = new();
+}
+
+/// <summary>
+/// The client of PostgreSQL that the restore rehearsal uses. The client of the
+/// host must have the same major version as the server, otherwise it refuses
+/// to dump it. The paths point at the client of the host.
+/// </summary>
+public sealed class OperationsOptions
+{
+    /// <summary>The client that dumps the database of the product.</summary>
+    public string PgDumpPath { get; init; } = "pg_dump";
+
+    /// <summary>The client that restores a dump into the isolated database.</summary>
+    public string PgRestorePath { get; init; } = "pg_restore";
+
+    /// <summary>The client that creates and drops the isolated database.</summary>
+    public string PsqlPath { get; init; } = "psql";
 }
 
 public sealed class DatabaseOptions

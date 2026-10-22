@@ -139,6 +139,45 @@ export type UpdateNotificationPreferencesBody = Partial<
   paths["/v1/notification-preferences"]["patch"]["requestBody"]["content"]["application/json"]
 >;
 
+export type OperationBackupListResponse =
+  paths["/v1/admin/operations/backups"]["get"]["responses"][200]["content"]["application/json"];
+
+export type OperationBackupResponse =
+  paths["/v1/admin/operations/backups"]["post"]["responses"][201]["content"]["application/json"];
+
+export type RestoreRehearsalListResponse =
+  paths["/v1/admin/operations/restores"]["get"]["responses"][200]["content"]["application/json"];
+
+export type RestoreRehearsalResponse =
+  paths["/v1/admin/operations/restores"]["post"]["responses"][200]["content"]["application/json"];
+
+export type DeletionRequestListResponse =
+  paths["/v1/admin/operations/deletions"]["get"]["responses"][200]["content"]["application/json"];
+
+export type DeletionRequestResponse =
+  paths["/v1/admin/operations/deletions"]["post"]["responses"][201]["content"]["application/json"];
+
+export type PilotGateResponse =
+  paths["/v1/admin/operations/gate"]["get"]["responses"][200]["content"]["application/json"];
+
+export type PublicStatusResponse =
+  paths["/v1/status"]["get"]["responses"][200]["content"]["application/json"];
+
+/** The body of the record of a backup. It holds no credential. */
+export type RecordBackupBody = Partial<
+  paths["/v1/admin/operations/backups"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the command that runs a restore rehearsal. */
+export type RunRestoreRehearsalBody = Partial<
+  paths["/v1/admin/operations/restores"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
+/** The body of the command that handles a deletion request. */
+export type CreateDeletionRequestBody = Partial<
+  paths["/v1/admin/operations/deletions"]["post"]["requestBody"]["content"]["application/json"]
+>;
+
 /** The body of the evidence of a seat. It holds no credential. */
 export type SubmitEvidenceBody = Partial<
   paths["/v1/participations/{id}/submissions"]["post"]["requestBody"]["content"]["application/json"]
@@ -591,6 +630,31 @@ export type BlindmeshClient = {
     body: UpdateNotificationPreferencesBody,
     csrfToken: string,
   ): Promise<ClientResult<NotificationPreferencesResponse>>;
+  /** Lists the backups of the product, the newest first. */
+  listOperationBackups(): Promise<ClientResult<OperationBackupListResponse>>;
+  /** Records a backup the operator took. */
+  recordOperationBackup(
+    body: RecordBackupBody,
+    csrfToken: string,
+  ): Promise<ClientResult<OperationBackupResponse>>;
+  /** Lists the restore rehearsals, the newest first. */
+  listRestoreRehearsals(): Promise<ClientResult<RestoreRehearsalListResponse>>;
+  /** Runs a restore rehearsal against an isolated database. */
+  runRestoreRehearsal(
+    body: RunRestoreRehearsalBody,
+    csrfToken: string,
+  ): Promise<ClientResult<RestoreRehearsalResponse>>;
+  /** Lists the deletion requests, the newest first. */
+  listDeletionRequests(): Promise<ClientResult<DeletionRequestListResponse>>;
+  /** Removes the identity of an account and keeps its pseudonym. */
+  createDeletionRequest(
+    body: CreateDeletionRequestBody,
+    csrfToken: string,
+  ): Promise<ClientResult<DeletionRequestResponse>>;
+  /** Reads the measured gate of the pilot. */
+  getPilotGate(): Promise<ClientResult<PilotGateResponse>>;
+  /** Reads the public status of the product. */
+  getPublicStatus(): Promise<ClientResult<PublicStatusResponse>>;
 };
 
 export type BlindmeshClientOptions = {
@@ -1221,5 +1285,31 @@ export function createClient(options: BlindmeshClientOptions): BlindmeshClient {
         body: JSON.stringify(body),
         cache: "no-store",
       }),
+    listOperationBackups: () => request<OperationBackupListResponse>("/admin/operations/backups", { cache: "no-store" }),
+    recordOperationBackup: (body, csrfToken) =>
+      request<OperationBackupResponse>("/admin/operations/backups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body ?? {}),
+        cache: "no-store",
+      }),
+    listRestoreRehearsals: () => request<RestoreRehearsalListResponse>("/admin/operations/restores", { cache: "no-store" }),
+    runRestoreRehearsal: (body, csrfToken) =>
+      request<RestoreRehearsalResponse>("/admin/operations/restores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body ?? {}),
+        cache: "no-store",
+      }),
+    listDeletionRequests: () => request<DeletionRequestListResponse>("/admin/operations/deletions", { cache: "no-store" }),
+    createDeletionRequest: (body, csrfToken) =>
+      request<DeletionRequestResponse>("/admin/operations/deletions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...withCsrf(csrfToken) },
+        body: JSON.stringify(body ?? {}),
+        cache: "no-store",
+      }),
+    getPilotGate: () => request<PilotGateResponse>("/admin/operations/gate", { cache: "no-store" }),
+    getPublicStatus: () => request<PublicStatusResponse>("/status", { cache: "no-store" }),
   };
 }

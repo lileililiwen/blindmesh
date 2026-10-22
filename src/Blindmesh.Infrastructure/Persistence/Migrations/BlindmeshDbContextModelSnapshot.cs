@@ -1612,6 +1612,200 @@ namespace Blindmesh.Infrastructure.Persistence.Migrations
                     b.ToTable("notification_preferences", (string)null);
                 });
 
+            modelBuilder.Entity("Blindmesh.Domain.Operations.BackupRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ChecksumSha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("checksum_sha256");
+
+                    b.Property<string>("Detail")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("detail");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("location");
+
+                    b.Property<DateTimeOffset>("RetentionUntil")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("retention_until");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("TakenAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("taken_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChecksumSha256")
+                        .HasDatabaseName("ix_operations_backups_checksum_sha256");
+
+                    b.HasIndex("TakenAt")
+                        .HasDatabaseName("ix_operations_backups_taken_at");
+
+                    b.ToTable("operations_backups", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Operations.DeletionRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuditReference")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("audit_reference");
+
+                    b.Property<string>("PseudonymizedUserId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("pseudonymized_user_id");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("received_at");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requester_id");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("scope");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("SubjectUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceivedAt")
+                        .HasDatabaseName("ix_operations_deletion_requests_received_at");
+
+                    b.HasIndex("SubjectUserId")
+                        .HasDatabaseName("ix_operations_deletion_requests_subject_user_id");
+
+                    b.ToTable("operations_deletion_requests", (string)null);
+                });
+
+            modelBuilder.Entity("Blindmesh.Domain.Operations.RestoreRehearsal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("AxeRuns")
+                        .HasColumnType("integer")
+                        .HasColumnName("axe_runs");
+
+                    b.Property<Guid?>("BackupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("backup_id");
+
+                    b.Property<int?>("BrowserJourneys")
+                        .HasColumnType("integer")
+                        .HasColumnName("browser_journeys");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("DataCheck")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("data_check");
+
+                    b.Property<string>("LedgerCheck")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("ledger_check");
+
+                    b.Property<string>("Namespace")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("namespace");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("ObjectCheck")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("object_check");
+
+                    b.Property<string>("SchemaCheck")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("schema_check");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BackupId")
+                        .HasDatabaseName("ix_operations_restore_rehearsals_backup_id");
+
+                    b.HasIndex("StartedAt")
+                        .HasDatabaseName("ix_operations_restore_rehearsals_started_at");
+
+                    b.ToTable("operations_restore_rehearsals", (string)null);
+                });
+
             modelBuilder.Entity("Blindmesh.Domain.Projects.Project", b =>
                 {
                     b.Property<Guid>("Id")

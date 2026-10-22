@@ -58,6 +58,18 @@ public interface IIdentityStore
 
     Task RemoveSessionAsync(Guid sessionId, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Removes the provider identity of a user. The account can never sign in
+    /// again, because no provider account belongs to it any more.
+    /// </summary>
+    Task RemoveExternalIdentityAsync(Guid userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Revokes every session of a user. The sessions of a closed account are
+    /// revoked, so the account loses its access at once.
+    /// </summary>
+    Task RevokeSessionsAsync(Guid userId, DateTimeOffset revokedAt, CancellationToken cancellationToken);
+
     Task<OAuthState?> FindOAuthStateAsync(string stateHash, CancellationToken cancellationToken);
 
     Task AddOAuthStateAsync(OAuthState state, CancellationToken cancellationToken);

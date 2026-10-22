@@ -76,6 +76,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 </li>
 
+                <li>
+                  <Link
+                    href="/status"
+                    aria-current={pathname === "/status" ? "page" : undefined}
+                    className="text-small underline underline-offset-4"
+                  >
+                    Status
+                  </Link>
+                </li>
+
                 {signedIn && user ? (
                   <>
                     <li>
@@ -198,6 +208,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           </Link>
                         </li>
                       </>
+                    ) : null}
+                    {user?.role === "administrator" ? (
+                      <li>
+                        <Link
+                          href="/admin/operations"
+                          aria-current={pathname === "/admin/operations" ? "page" : undefined}
+                          className="text-small underline underline-offset-4"
+                        >
+                          The operations
+                        </Link>
+                      </li>
                     ) : null}
                     <li>
                       <Button

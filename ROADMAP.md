@@ -1,6 +1,6 @@
 # Delivery roadmap
 
-The runtime foundation, the identity package, the project package, the capability package, the credit package, the task publication package, the participation execution package, the evidence package, the moderation package, the reputation package and the notification package are implemented, verified and archived. The changes below that are not archived yet are proposed, unimplemented and unarchived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
+All twelve packages are implemented, verified and archived. Version labels are targets, not releases. [Package map](openspec/package-map.md) is the dependency authority.
 
 | Order | Target | Change | Independently accepted outcome |
 |---|---|---|---|
@@ -15,7 +15,7 @@ The runtime foundation, the identity package, the project package, the capabilit
 | 9 | v0.3 safety | moderation-arbitration (archived) | Reports and payment disputes reach auditable moderator decisions |
 | 10 | v0.3 trust | reputation-history (archived) | Completed contributions produce non-purchasable, explainable reputation |
 | 11 | v0.3 communication | notification-delivery (archived) | In-app and SMTP notifications survive retries without leaking private content |
-| 12 | v0.4 pilot | pilot-operations | Operator rehearses deploy, rollback, backup/restore, and measured pilot release gates |
+| 12 | v0.4 pilot | pilot-operations (archived) | Operator rehearses deploy, rollback, backup/restore, and measured pilot release gates |
 
 Foundation is deliberately before authentication; accounting is before publication. A task can never be published before its maximum budget is reserved. Baseline grant and expiry decisions are explicit in the credit change.
 

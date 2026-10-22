@@ -8,6 +8,7 @@ using Blindmesh.Infrastructure.Findings;
 using Blindmesh.Infrastructure.Identity;
 using Blindmesh.Infrastructure.Moderation;
 using Blindmesh.Infrastructure.Notifications;
+using Blindmesh.Infrastructure.Operations;
 using Blindmesh.Infrastructure.Persistence.Entities;
 using Blindmesh.Infrastructure.Projects;
 using Blindmesh.Infrastructure.Reputation;
@@ -110,6 +111,12 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
 
     public DbSet<Blindmesh.Domain.Notifications.NotificationPreference> NotificationPreferences => Set<Blindmesh.Domain.Notifications.NotificationPreference>();
 
+    public DbSet<Blindmesh.Domain.Operations.BackupRecord> OperationsBackups => Set<Blindmesh.Domain.Operations.BackupRecord>();
+
+    public DbSet<Blindmesh.Domain.Operations.RestoreRehearsal> OperationsRestoreRehearsals => Set<Blindmesh.Domain.Operations.RestoreRehearsal>();
+
+    public DbSet<Blindmesh.Domain.Operations.DeletionRequest> OperationsDeletionRequests => Set<Blindmesh.Domain.Operations.DeletionRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OutboxMessageEntity>(entity =>
@@ -176,5 +183,9 @@ public sealed class BlindmeshDbContext(DbContextOptions<BlindmeshDbContext> opti
         // The tables of the notification module. They are owned by the
         // notification package and are not changed by any other module.
         modelBuilder.ApplyNotificationModel();
+
+        // The tables of the operations module. They are owned by the
+        // operations package and are not changed by any other module.
+        modelBuilder.ApplyOperationsModel();
     }
 }

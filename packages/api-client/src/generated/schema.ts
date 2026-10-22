@@ -1030,6 +1030,94 @@ export interface paths {
         patch: operations["UpdateNotificationPreferences"];
         trace?: never;
     };
+    "/v1/admin/operations/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the backups of the product, the newest first. */
+        get: operations["ListOperationBackups"];
+        put?: never;
+        /** Record a backup the operator took. */
+        post: operations["RecordOperationBackup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/operations/restores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the restore rehearsals, the newest first. */
+        get: operations["ListOperationRestoreRehearsals"];
+        put?: never;
+        /** Run a restore rehearsal against an isolated database. */
+        post: operations["RunOperationRestoreRehearsal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/operations/deletions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the deletion requests, the newest first. */
+        get: operations["ListOperationDeletionRequests"];
+        put?: never;
+        /** Remove the identity of an account and keep its pseudonym. */
+        post: operations["CreateOperationDeletionRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/operations/gate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the measured gate of the pilot. */
+        get: operations["ReadOperationPilotGate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the public status of the product. */
+        get: operations["ReadPublicStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1090,6 +1178,24 @@ export interface components {
             state: string;
             /** Format: date-time */
             created_at: string;
+        };
+        BackupListResponse: {
+            items: components["schemas"]["BackupView"][];
+        };
+        BackupView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            taken_at: string;
+            kind: string;
+            location: string;
+            /** Format: int64 */
+            size_bytes: number | string;
+            checksum_sha256: string;
+            status: string;
+            /** Format: date-time */
+            retention_until: string;
+            detail: string;
         };
         BanBody: {
             reason?: null | string;
@@ -1162,6 +1268,11 @@ export interface components {
             metadata: null | {
                 [key: string]: string;
             };
+        };
+        CreateDeletionRequestRequest: {
+            /** Format: uuid */
+            subject_user_id: null | string;
+            scope: null | string;
         };
         CreateProjectRequest: {
             name: null | string;
@@ -1246,6 +1357,19 @@ export interface components {
             grant: components["schemas"]["CreditGrantView"];
             /** Format: date-time */
             as_of: string;
+        };
+        DeletionRequestListResponse: {
+            items: components["schemas"]["DeletionRequestView"][];
+        };
+        DeletionRequestView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            received_at: string;
+            scope: string;
+            status: string;
+            pseudonymized_user_id: string;
+            audit_reference: string;
         };
         DisputeBody: {
             reason?: null | string;
@@ -1479,6 +1603,19 @@ export interface components {
             /** Format: int32 */
             expected_version?: null | number | string;
         };
+        PilotGateItemView: {
+            name: string;
+            measured: string;
+            expected: string;
+            passed: boolean;
+            command: string;
+        };
+        PilotGateView: {
+            items: components["schemas"]["PilotGateItemView"][];
+            ready: boolean;
+            /** Format: date-time */
+            measured_at: string;
+        };
         ProfileView: {
             /** Format: uuid */
             id: string;
@@ -1568,6 +1705,39 @@ export interface components {
             /** Format: int32 */
             version: number | string;
         };
+        PublicStatusDependency: {
+            name: string;
+            status: string;
+            detail: string;
+        };
+        PublicStatusMarketplace: {
+            /** Format: int64 */
+            published_tasks: number | string;
+            /** Format: int64 */
+            accepted_contributions: number | string;
+            /** Format: int64 */
+            open_cases: number | string;
+            /** Format: int64 */
+            contributors: number | string;
+        };
+        PublicStatusView: {
+            status: string;
+            /** Format: date-time */
+            checked_at: string;
+            dependencies: components["schemas"]["PublicStatusDependency"][];
+            marketplace: components["schemas"]["PublicStatusMarketplace"];
+            not_implemented: string[];
+        };
+        RecordBackupRequest: {
+            kind: null | string;
+            location: null | string;
+            /** Format: int64 */
+            size_bytes: null | number | string;
+            checksum_sha256: null | string;
+            /** Format: date-time */
+            retention_until: null | string;
+            detail: null | string;
+        };
         ReportBody: {
             reason?: null | string;
             subject_type?: null | string;
@@ -1653,6 +1823,38 @@ export interface components {
             bonus?: null | number | string;
             /** Format: int32 */
             expected_version?: null | number | string;
+        };
+        RestoreRehearsalListResponse: {
+            items: components["schemas"]["RestoreRehearsalView"][];
+        };
+        RestoreRehearsalView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            backup_id: null | string;
+            namespace: string;
+            /** Format: date-time */
+            started_at: string;
+            /** Format: date-time */
+            completed_at: null | string;
+            status: string;
+            schema_check: string;
+            data_check: string;
+            object_check: string;
+            ledger_check: string;
+            notes: string;
+            /** Format: int32 */
+            browser_journeys: null | number | string;
+            /** Format: int32 */
+            axe_runs: null | number | string;
+        };
+        RunRestoreRehearsalRequest: {
+            /** Format: uuid */
+            backup_id: null | string;
+            /** Format: int32 */
+            browser_journeys: null | number | string;
+            /** Format: int32 */
+            axe_runs: null | number | string;
         };
         RuntimeAvailability: {
             status: string;
@@ -5954,6 +6156,358 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ListOperationBackups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupListResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    RecordOperationBackup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordBackupRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ListOperationRestoreRehearsals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestoreRehearsalListResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    RunOperationRestoreRehearsal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunRestoreRehearsalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestoreRehearsalView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ListOperationDeletionRequests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletionRequestListResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    CreateOperationDeletionRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDeletionRequestRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletionRequestView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ReadOperationPilotGate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PilotGateView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ReadPublicStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicStatusView"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

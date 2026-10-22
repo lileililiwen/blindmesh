@@ -1,0 +1,137 @@
+name: blindmesh
+
+# The production stack of Blindmesh.
+#
+#   docker compose -f infra/compose.prod.yaml pull
+#   docker compose -f infra/compose.prod.yaml run --rm api migrate
+#   docker compose -f infra/compose.prod.yaml up -d
+#
+# The file holds configuration only and nothing is deployed by the repository.
+# Every secret of the stack comes from the environment of the host: the file
+# holds no password, no key and no token.
+#
+# The steps of the deployment and the steps of the rollback are written down in
+# infra/runbooks/deployment.md and infra/runbooks/rollback.md.
+
+services:
+  postgres:
+    image: postgres:17.11-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${BLINDMESH_PG_USER}"
+      POSTGRES_PASSWORD: "${BLINDMESH_PG_PASSWORD}"
+      POSTGRES_DB: "${BLINDMESH_PG_DATABASE}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$BLINDMESH_PG_USER\" -d \"$$BLINDMESH_PG_DATABASE\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  object-storage:
+    image: rustfs/rustfs:1.0.3
+    restart: unless-stopped
+    command: /data
+    environment:
+      RUSTFS_ACCESS_KEY: "${BLINDMESH_STORAGE_ACCESS_KEY}"
+      RUSTFS_SECRET_KEY: "${BLINDMESH_STORAGE_SECRET_KEY}"
+    volumes:
+      - object-storage-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  mail:
+    # The relay of the stack. A relay of the host replaces it by pointing
+    # Blindmesh__Mail__Host and Blindmesh__Mail__Port at that relay.
+    image: axllent/mailpit:v1.31.6
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8025/readyz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    image: "${BLINDMESH_API_IMAGE:-blindmesh-api:latest}"
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      APP_ENV: "${BLINDMESH_APP_ENV:-production}"
+      Blindmesh__Database__ConnectionString: "Host=postgres;Port=5432;Database=${BLINDMESH_PG_DATABASE};Username=${BLINDMESH_PG_USER};Password=${BLINDMESH_PG_PASSWORD}"
+      Blindmesh__ObjectStorage__Endpoint: "http://object-storage:9000"
+      Blindmesh__ObjectStorage__PublicEndpoint: "${BLINDMESH_STORAGE_PUBLIC_ENDPOINT}"
+      Blindmesh__ObjectStorage__Bucket: "${BLINDMESH_STORAGE_BUCKET}"
+      Blindmesh__ObjectStorage__AccessKey: "${BLINDMESH_STORAGE_ACCESS_KEY}"
+      Blindmesh__ObjectStorage__SecretKey: "${BLINDMESH_STORAGE_SECRET_KEY}"
+      Blindmesh__Mail__Host: "${BLINDMESH_MAIL_HOST:-mail}"
+      Blindmesh__Mail__Port: "${BLINDMESH_MAIL_PORT:-1025}"
+      Blindmesh__Identity__PublicBaseUrl: "${BLINDMESH_IDENTITY_PUBLIC_BASE_URL}"
+      Blindmesh__Identity__BrowserApiPrefix: "/api/v1"
+      Blindmesh__Identity__CookieSecurity: "Strict"
+      # The client of PostgreSQL of the host of the API. It must have the same
+      # major version as the server, see infra/runbooks/backup-restore.md.
+      Blindmesh__Operations__PgDumpPath: "${BLINDMESH_PG_DUMP_PATH:-pg_dump}"
+      Blindmesh__Operations__PgRestorePath: "${BLINDMESH_PG_RESTORE_PATH:-pg_restore}"
+      Blindmesh__Operations__PsqlPath: "${BLINDMESH_PSQL_PATH:-psql}"
+      Api__AllowedOrigins__0: "${BLINDMESH_PUBLIC_ORIGIN}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      object-storage:
+        condition: service_healthy
+      mail:
+        condition: service_started
+    expose:
+      - "8080"
+
+  worker:
+    image: "${BLINDMESH_WORKER_IMAGE:-blindmesh-worker:latest}"
+    restart: unless-stopped
+    environment:
+      Blindmesh__Database__ConnectionString: "Host=postgres;Port=5432;Database=${BLINDMESH_PG_DATABASE};Username=${BLINDMESH_PG_USER};Password=${BLINDMESH_PG_PASSWORD}"
+      Blindmesh__ObjectStorage__Endpoint: "http://object-storage:9000"
+      Blindmesh__ObjectStorage__Bucket: "${BLINDMESH_STORAGE_BUCKET}"
+      Blindmesh__ObjectStorage__AccessKey: "${BLINDMESH_STORAGE_ACCESS_KEY}"
+      Blindmesh__ObjectStorage__SecretKey: "${BLINDMESH_STORAGE_SECRET_KEY}"
+      Blindmesh__Mail__Host: "${BLINDMESH_MAIL_HOST:-mail}"
+      Blindmesh__Mail__Port: "${BLINDMESH_MAIL_PORT:-1025}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      object-storage:
+        condition: service_healthy
+
+  web:
+    image: "${BLINDMESH_WEB_IMAGE:-blindmesh-web:latest}"
+    restart: unless-stopped
+    environment:
+      BLINDMESH_API_URL: "http://api:8080"
+      PORT: "3000"
+    depends_on:
+      - api
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2.11.7-alpine
+    restart: unless-stopped
+    ports:
+      - "${BLINDMESH_PUBLIC_PORT:-80}:80"
+      - "${BLINDMESH_PUBLIC_TLS_PORT:-443}:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
+      - web
+
+volumes:
+  postgres-data:
+  object-storage-data:
+  caddy-data:
+  caddy-config:

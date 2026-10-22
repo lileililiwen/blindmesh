@@ -17,7 +17,7 @@ namespace Blindmesh.Infrastructure;
 /// </summary>
 public static class InfrastructureServiceCollectionExtensions
 {
-    public const string ReadyTag = "ready";
+    public const string ReadyTag = Blindmesh.Application.Operations.OperationsService.ReadyTag;
 
     public static IServiceCollection AddBlindmeshInfrastructure(
         this IServiceCollection services,

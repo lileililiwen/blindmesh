@@ -4,7 +4,7 @@ Find what you couldn't see. Build alone, test together.
 
 Blindmesh is a mutual testing platform for independent developers. Contributors earn internal Credits for useful testing and spend them on exploration, directed verification, and authorized resource collaboration.
 
-**Status: the runtime foundation, the identity package, the project package, the capability package, the credit package, the task publication package, the participation execution package, the evidence package, the moderation package, the reputation package and the notification package run.** The API, the worker, the PostgreSQL schema, the generated API client, the web application, the GitHub sign in, the public contributor profile, the project workspaces with their visibility and membership, the capability directory with its eligibility evaluation, the wallet with the conserved credit balances and the limited grant, the task marketplace with the publication that reserves the whole budget of a task before it opens, the seat of a contributor with its application, its lease, its start and its deadlines, the evidence of a finished seat with its private files, its findings and its settlement, the moderation of the reports and of the credit disputes with its reasoned decisions, the reputation that counts the accepted contributions and the confirmed findings of a contributor, and the notifications of the workflow events with their in-app items, their emails and the preferences of the recipient are implemented, built and tested. The remaining marketplace feature (the pilot operations) is still specified, not implemented. See [HANDOFF](HANDOFF.md) for the actual evidence and the remaining boundaries.
+**Status: all twelve packages run.** The API, the worker, the PostgreSQL schema, the generated API client, the web application, the GitHub sign in, the public contributor profile, the project workspaces with their visibility and membership, the capability directory with its eligibility evaluation, the wallet with the conserved credit balances and the limited grant, the task marketplace with the publication that reserves the whole budget of a task before it opens, the seat of a contributor with its application, its lease, its start and its deadlines, the evidence of a finished seat with its private files, its findings and its settlement, the moderation of the reports and of the credit disputes with its reasoned decisions, the reputation that counts the accepted contributions and the confirmed findings of a contributor, the notifications of the workflow events with their in-app items, their emails and the preferences of the recipient, and the pilot operations with their runbooks, their restore rehearsal, their authorized deletion and their measured gate are implemented, built and tested. Every package of the delivery order is archived. See [HANDOFF](HANDOFF.md) for the actual evidence and the remaining boundaries.
 
 ## Start here
 
@@ -66,6 +66,8 @@ npm --prefix apps/web run test:e2e -- --project=chromium --grep REP
 npm --prefix apps/web run test:a11y -- --grep REP
 npm --prefix apps/web run test:e2e -- --project=chromium --grep NOTIF
 npm --prefix apps/web run test:a11y -- --grep NOTIF
+npm --prefix apps/web run test:e2e -- --project=chromium --grep OPS
+npm --prefix apps/web run test:a11y -- --grep OPS
 python3 scripts/verify_bootstrap.py
 node scripts/check-openspec-change-names.mjs
 openspec validate --all --strict --no-interactive

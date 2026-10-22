@@ -132,8 +132,8 @@
         "notification-delivery"
       ],
       "requirement_prefix": "OPS",
-      "status": "proposed",
-      "readiness": "next-in-order",
+      "status": "archived",
+      "readiness": "implemented-and-verified-2026-10-22",
       "module": "src/Blindmesh.Domain/Operations, src/Blindmesh.Application/Operations, src/Blindmesh.Infrastructure, src/Blindmesh.Api, apps/web"
     }
   ]

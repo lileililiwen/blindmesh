@@ -4500,6 +4500,398 @@
           }
         }
       }
+    },
+    "/v1/admin/operations/backups": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "summary": "List the backups of the product, the newest first.",
+        "operationId": "ListOperationBackups",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "summary": "Record a backup the operator took.",
+        "operationId": "RecordOperationBackup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordBackupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/operations/restores": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "summary": "List the restore rehearsals, the newest first.",
+        "operationId": "ListOperationRestoreRehearsals",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreRehearsalListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "summary": "Run a restore rehearsal against an isolated database.",
+        "operationId": "RunOperationRestoreRehearsal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunRestoreRehearsalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreRehearsalView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/operations/deletions": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "summary": "List the deletion requests, the newest first.",
+        "operationId": "ListOperationDeletionRequests",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionRequestListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "summary": "Remove the identity of an account and keep its pseudonym.",
+        "operationId": "CreateOperationDeletionRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDeletionRequestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionRequestView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/operations/gate": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "summary": "Read the measured gate of the pilot.",
+        "operationId": "ReadOperationPilotGate",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PilotGateView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/status": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "summary": "Read the public status of the product.",
+        "operationId": "ReadPublicStatus",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStatusView"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4717,6 +5109,71 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "BackupListResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BackupView"
+            }
+          }
+        }
+      },
+      "BackupView": {
+        "required": [
+          "id",
+          "taken_at",
+          "kind",
+          "location",
+          "size_bytes",
+          "checksum_sha256",
+          "status",
+          "retention_until",
+          "detail"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "taken_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "checksum_sha256": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "retention_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "detail": {
+            "type": "string"
           }
         }
       },
@@ -5007,6 +5464,28 @@
             "additionalProperties": {
               "type": "string"
             }
+          }
+        }
+      },
+      "CreateDeletionRequestRequest": {
+        "required": [
+          "subject_user_id",
+          "scope"
+        ],
+        "type": "object",
+        "properties": {
+          "subject_user_id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "scope": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -5356,6 +5835,53 @@
           "as_of": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "DeletionRequestListResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeletionRequestView"
+            }
+          }
+        }
+      },
+      "DeletionRequestView": {
+        "required": [
+          "id",
+          "received_at",
+          "scope",
+          "status",
+          "pseudonymized_user_id",
+          "audit_reference"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "pseudonymized_user_id": {
+            "type": "string"
+          },
+          "audit_reference": {
+            "type": "string"
           }
         }
       },
@@ -6294,6 +6820,56 @@
           }
         }
       },
+      "PilotGateItemView": {
+        "required": [
+          "name",
+          "measured",
+          "expected",
+          "passed",
+          "command"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "measured": {
+            "type": "string"
+          },
+          "expected": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "command": {
+            "type": "string"
+          }
+        }
+      },
+      "PilotGateView": {
+        "required": [
+          "items",
+          "ready",
+          "measured_at"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PilotGateItemView"
+            }
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "measured_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "ProfileView": {
         "required": [
           "id",
@@ -6626,6 +7202,155 @@
           }
         }
       },
+      "PublicStatusDependency": {
+        "required": [
+          "name",
+          "status",
+          "detail"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicStatusMarketplace": {
+        "required": [
+          "published_tasks",
+          "accepted_contributions",
+          "open_cases",
+          "contributors"
+        ],
+        "type": "object",
+        "properties": {
+          "published_tasks": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "accepted_contributions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "open_cases": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "contributors": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "PublicStatusView": {
+        "required": [
+          "status",
+          "checked_at",
+          "dependencies",
+          "marketplace",
+          "not_implemented"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicStatusDependency"
+            }
+          },
+          "marketplace": {
+            "$ref": "#/components/schemas/PublicStatusMarketplace"
+          },
+          "not_implemented": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RecordBackupRequest": {
+        "required": [
+          "kind",
+          "location",
+          "size_bytes",
+          "checksum_sha256",
+          "retention_until",
+          "detail"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "location": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "size_bytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "checksum_sha256": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "retention_until": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "ReportBody": {
         "type": "object",
         "properties": {
@@ -6955,6 +7680,136 @@
             "format": "int64"
           },
           "expected_version": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "RestoreRehearsalListResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RestoreRehearsalView"
+            }
+          }
+        }
+      },
+      "RestoreRehearsalView": {
+        "required": [
+          "id",
+          "backup_id",
+          "namespace",
+          "started_at",
+          "completed_at",
+          "status",
+          "schema_check",
+          "data_check",
+          "object_check",
+          "ledger_check",
+          "notes",
+          "browser_journeys",
+          "axe_runs"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "backup_id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "schema_check": {
+            "type": "string"
+          },
+          "data_check": {
+            "type": "string"
+          },
+          "object_check": {
+            "type": "string"
+          },
+          "ledger_check": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "browser_journeys": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "axe_runs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "RunRestoreRehearsalRequest": {
+        "required": [
+          "backup_id",
+          "browser_journeys",
+          "axe_runs"
+        ],
+        "type": "object",
+        "properties": {
+          "backup_id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "browser_journeys": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "axe_runs": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
@@ -8407,6 +9262,9 @@
     },
     {
       "name": "NotificationEndpoints"
+    },
+    {
+      "name": "OperationsEndpoints"
     }
   ]
 }
